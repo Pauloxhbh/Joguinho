@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Protocol: Director's Cut</title>
+    <title>Neon RPG: V23 Campaign Final</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
@@ -11,16 +11,24 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background-color: #050505; overflow: hidden; font-family: 'Rajdhani', sans-serif; height: 100vh; width: 100vw; color: white; }
-        canvas { display: block; width: 100%; height: 100%; }
+        canvas { display: block; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* UI LAYERS */
         .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; z-index: 10; }
         
         /* HUD */
-        .hud-top { width: 100%; max-width: 500px; margin: 0 auto; pointer-events: auto; display: flex; justify-content: space-between; align-items: flex-start; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
+        .hud-top { width: 100%; max-width: 500px; margin: 0 auto; pointer-events: auto; display: flex; justify-content: space-between; align-items: flex-start; text-shadow: 0 2px 5px rgba(0,0,0,0.8); position: relative; }
         .bars-area { width: 60%; }
         .stats-area { width: 35%; text-align: right; font-family: 'Orbitron'; }
         
+        /* Botão Sair */
+        .exit-btn {
+            position: absolute; top: -10px; right: -10px;
+            background: rgba(255, 0, 0, 0.3); border: 1px solid #ff4444; color: #ff4444;
+            width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; cursor: pointer; backdrop-filter: blur(5px);
+        }
+        .exit-btn:active { background: #ff4444; color: white; }
+
         .sector-indicator { font-size: 18px; color: #fff; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; }
         .node-indicator { font-size: 12px; color: #aaa; margin-bottom: 5px; }
         .essence-box { color: #b026ff; font-weight: bold; font-size: 16px; text-shadow: 0 0 15px #b026ff; }
@@ -37,21 +45,38 @@
         .btn-atk { border-color: #ff4444; color: #ffcccc; } .btn-mag { border-color: #44ccff; color: #ccffff; } .btn-pot { border-color: #44ff44; color: #ccffcc; }
         .btn:disabled, .btn.low-mana { opacity: 0.4; filter: grayscale(1); border-color: #444; }
 
-        /* SHOP NEON */
-        #shop-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(5, 5, 10, 0.95); z-index: 100; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; pointer-events: auto; backdrop-filter: blur(10px); }
-        .shop-header { text-align: center; margin-bottom: 25px; margin-top: 30px; }
-        .shop-header h1 { font-family: 'Orbitron'; color: #ff4444; font-size: 28px; text-shadow: 0 0 20px #ff0000; letter-spacing: 2px; margin-bottom: 5px; text-transform: uppercase; }
+        /* MAP SYSTEM */
+        #map-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(10, 10, 15, 0.98); z-index: 80; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; pointer-events: auto; backdrop-filter: blur(10px); }
+        .map-header { text-align: center; margin: 40px 0 20px 0; width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; }
+        .map-title h1 { font-family: 'Orbitron'; color: #00ffff; font-size: 20px; letter-spacing: 2px; }
+        .map-title p { font-family: 'Share Tech Mono'; color: #888; font-size: 12px; }
+        .open-shop-btn { background: linear-gradient(135deg, #b026ff, #7a00cc); color: white; border: 1px solid #d08aff; padding: 10px 15px; border-radius: 8px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; box-shadow: 0 0 15px rgba(176, 38, 255, 0.4); font-size: 12px; }
+
+        .map-grid { display: flex; flex-direction: column-reverse; gap: 20px; width: 100%; max-width: 350px; padding-bottom: 50px; position: relative; }
+        .map-grid::before { content: ''; position: absolute; top: 20px; bottom: 20px; left: 50%; width: 2px; background: #333; transform: translateX(-50%); z-index: 0; }
+
+        .map-node { background: #111; border: 2px solid #444; width: 100%; padding: 15px; border-radius: 8px; position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s; opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+        .map-node.unlocked { opacity: 1; filter: grayscale(0); border-color: #00ff00; background: rgba(0, 255, 0, 0.05); cursor: pointer; pointer-events: auto; }
+        .map-node.active { box-shadow: 0 0 15px rgba(0, 255, 0, 0.4); border-color: #fff; animation: pulseNode 2s infinite; }
+        .map-node.completed { border-color: #00ffff; color: #00ffff; }
+        .map-node.locked { border-color: #222; opacity: 0.3; }
+        .map-node.boss { border-color: #ff0055; }
+        
+        .node-info { display: flex; flex-direction: column; }
+        .node-title { font-family: 'Orbitron'; font-weight: bold; font-size: 16px; }
+        .node-desc { font-family: 'Share Tech Mono'; font-size: 12px; color: #aaa; }
+        .node-icon { font-size: 20px; }
+        @keyframes pulseNode { 0%{transform:scale(1);} 50%{transform:scale(1.02);} 100%{transform:scale(1);} }
+
+        /* SHOP */
+        #shop-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(5, 5, 10, 0.98); z-index: 100; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; pointer-events: auto; backdrop-filter: blur(10px); }
+        .shop-header h1 { font-family: 'Orbitron'; color: #ff4444; font-size: 28px; text-shadow: 0 0 20px #ff0000; letter-spacing: 2px; margin-bottom: 5px; text-transform: uppercase; margin-top: 30px; }
         .shop-essence { font-size: 36px; color: #b026ff; font-weight: bold; font-family: 'Orbitron'; text-shadow: 0 0 25px #b026ff; margin-top: 10px; }
         .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 420px; margin-bottom: 30px; }
         .skill-card { background: rgba(255, 255, 255, 0.03); border-radius: 15px; padding: 15px 10px; display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden; transition: all 0.2s; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .sc-atk { border-color: #00f0ff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(0, 240, 255, 0.1); }
-        .sc-hp { border-color: #bd00ff; box-shadow: 0 0 15px rgba(189, 0, 255, 0.2), inset 0 0 15px rgba(189, 0, 255, 0.1); }
-        .sc-mp { border-color: #a020f0; box-shadow: 0 0 15px rgba(160, 32, 240, 0.2), inset 0 0 15px rgba(160, 32, 240, 0.1); }
-        .sc-crt { border-color: #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.2), inset 0 0 15px rgba(0, 255, 0, 0.1); }
-        .sc-def { border-color: #0088ff; box-shadow: 0 0 15px rgba(0, 136, 255, 0.2), inset 0 0 15px rgba(0, 136, 255, 0.1); }
-        .sc-spd { border-color: #ffff00; box-shadow: 0 0 15px rgba(255, 255, 0, 0.2), inset 0 0 15px rgba(255, 255, 0, 0.1); }
+        .sc-atk { border-color: #00f0ff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); } .sc-hp { border-color: #bd00ff; box-shadow: 0 0 15px rgba(189, 0, 255, 0.2); } .sc-mp { border-color: #a020f0; box-shadow: 0 0 15px rgba(160, 32, 240, 0.2); } .sc-crt { border-color: #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.2); } .sc-def { border-color: #0088ff; box-shadow: 0 0 15px rgba(0, 136, 255, 0.2); } .sc-spd { border-color: #ffff00; box-shadow: 0 0 15px rgba(255, 255, 0, 0.2); }
         .skill-icon { font-size: 38px; margin-bottom: 8px; filter: drop-shadow(0 0 5px currentColor); }
-        .skill-name { font-family: 'Orbitron'; font-weight: 800; font-size: 14px; letter-spacing: 1px; color: #fff; margin-bottom: 2px; text-transform: uppercase; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        .skill-name { font-family: 'Orbitron'; font-weight: 800; font-size: 14px; letter-spacing: 1px; color: #fff; margin-bottom: 2px; text-transform: uppercase; }
         .skill-lvl { font-size: 11px; color: #aaa; font-family: 'Orbitron'; margin-bottom: 8px; letter-spacing: 1px; }
         .skill-progress { width: 100%; height: 10px; background: #111; border-radius: 2px; margin-bottom: 12px; overflow: hidden; position: relative; border: 1px solid #333; }
         .skill-bar { height: 100%; width: 0%; transition: width 0.3s; position: relative; }
@@ -59,38 +84,30 @@
         .buy-btn { width: 100%; padding: 10px; border-radius: 6px; background: #222; border: 1px solid #444; color: #666; font-family: 'Orbitron'; font-weight: bold; font-size: 12px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
         .buy-btn.can-buy { border-color: #fff; background: rgba(255,255,255,0.15); color: #fff; text-shadow: 0 0 8px #fff; box-shadow: 0 0 10px rgba(255,255,255,0.2); }
         .buy-btn.can-buy:active { background: #fff; color: #000; }
-        #restart-btn { width: 100%; max-width: 420px; padding: 20px; background: linear-gradient(90deg, rgba(255,0,68,0.2), rgba(255,0,68,0.4), rgba(255,0,68,0.2)); border: 2px solid #ff0044; color: #ff0044; font-family: 'Orbitron'; font-size: 18px; font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 25px rgba(255, 0, 68, 0.3); text-shadow: 0 0 10px #ff0044; transition: 0.3s; margin-bottom: 20px; }
-        #restart-btn:active { background: #ff0044; color: #fff; }
+        #restart-btn { width: 100%; max-width: 420px; padding: 20px; background: linear-gradient(90deg, rgba(255,0,68,0.2), rgba(255,0,68,0.4), rgba(255,0,68,0.2)); border: 2px solid #ff0044; color: #ff0044; font-family: 'Orbitron'; font-size: 18px; font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 25px rgba(255, 0, 68, 0.3); margin-bottom: 20px; }
 
         /* LOADING */
         #loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: auto; }
         .loader { width: 50px; height: 50px; border: 5px solid #333; border-top: 5px solid #00ffff; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* START (INTERACTION FIX) */
+        /* START */
         #start-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #050505; z-index: 150; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; pointer-events: auto; }
-        .start-content { width: 100%; max-width: 400px; }
-        .intro-text { font-family: 'Share Tech Mono', monospace; font-size: 13px; color: #aaa; margin-bottom: 30px; line-height: 1.6; text-align: left; border-left: 3px solid #333; padding-left: 15px; }
-        .intro-text strong { color: white; }
-        .class-container { display: grid; gap: 15px; width: 100%; }
-        .class-btn { padding: 20px; border: 1px solid; background: rgba(255,255,255,0.05); color: white; border-radius: 8px; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; pointer-events: auto; position: relative; overflow: hidden; }
-        .class-btn:active { transform: scale(0.98); background: rgba(255,255,255,0.15); }
+        .class-container { display: grid; gap: 15px; width: 100%; max-width: 400px; margin-top: 20px; }
+        .class-btn { padding: 20px; border: 1px solid; background: rgba(255,255,255,0.05); color: white; border-radius: 8px; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
         
         #relic-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; }
         .relic-title { font-size: 24px; color: #ffd700; margin-bottom: 20px; text-shadow: 0 0 15px #ffd700; text-align: center; font-family: 'Orbitron'; }
         .relic-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; }
         .relic-card { background: rgba(20, 20, 30, 0.9); border: 2px solid #444; padding: 20px; border-radius: 10px; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; }
-        .relic-card:active { transform: scale(0.95); border-color: #ffd700; }
         .relic-icon { font-size: 30px; margin-right: 15px; }
         .relic-info h3 { font-size: 16px; color: #fff; margin-bottom: 5px; font-family:'Orbitron'; }
-        .relic-info p { font-size: 12px; color: #aaa; font-family: 'Roboto Mono'; }
-
+        
         #dialogue-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: flex-end; padding: 20px; z-index: 60; pointer-events: auto; }
         .dialogue-box { background: rgba(10, 15, 25, 0.95); border: 1px solid #00ffff; border-top: 3px solid #00ffff; padding: 25px; border-radius: 12px; margin-bottom: 10%; box-shadow: 0 0 20px rgba(0,255,255,0.1); }
         .char-name { color: #00ffff; font-size: 14px; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px; font-family: 'Orbitron'; text-transform: uppercase; }
         .dialogue-text { font-family: 'Share Tech Mono', monospace; font-size: 15px; line-height: 1.5; color: #e0e0e0; min-height: 60px; white-space: pre-wrap; }
         .next-btn { background: transparent; color: #00ffff; border: 2px solid #00ffff; padding: 15px; width: 100%; margin-top: 15px; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
-        .next-btn:active { background: #00ffff; color: #000; }
         
         .toast { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold; color: #fff; text-shadow: 0 0 10px #fff; opacity: 0; transition: opacity 0.5s, transform 0.5s; z-index: 80; pointer-events: none; }
         .toast.show { opacity: 1; transform: translate(-50%, -80%); }
@@ -103,26 +120,22 @@
 
     <div id="start-overlay">
         <div class="start-content">
-            <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 15px; font-size: 32px; font-family:'Orbitron'">NEON PROTOCOL</h1>
-            <div class="intro-text">
-                AVISO DO SISTEMA: <br><br>
-                O Mainframe colapsou. A "corrupção" tomou conta.<br><br>
-                Você é o <strong>Protocolo Neon</strong>.<br>
-                Sua missão: Eliminar a corrupção e reiniciar o Núcleo.
-            </div>
-            <p style="color:#fff; font-size:12px; margin-bottom:15px; text-align: left; font-weight: bold; font-family: 'Orbitron';">SELECIONE SEU MÓDULO:</p>
+            <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 15px; font-size: 32px; font-family:'Orbitron'; color:white">NEON PROTOCOL</h1>
+            <p style="color:#fff; font-size:12px; margin-bottom:15px; font-weight: bold; font-family: 'Orbitron';">SELECIONE MÓDULO:</p>
             <div class="class-container">
-                <button class="class-btn" style="border-color:#ff0055" onclick="chooseClass('samurai')">
-                    <div><div style="font-weight:bold; color:#ff0055; font-size:16px;">LÂMINA VERMELHA</div><small style="font-family:'Roboto Mono'; color:#ccc;">Letal e Instável</small></div><div style="font-size:24px">⚔️</div>
-                </button>
-                <button class="class-btn" style="border-color:#00ffff" onclick="chooseClass('mage')">
-                    <div><div style="font-weight:bold; color:#00ffff; font-size:16px;">CÓDIGO AZUL</div><small style="font-family:'Roboto Mono'; color:#ccc;">Compilador Vivo</small></div><div style="font-size:24px">✨</div>
-                </button>
-                <button class="class-btn" style="border-color:#00ff00" onclick="chooseClass('tank')">
-                    <div><div style="font-weight:bold; color:#00ff00; font-size:16px;">FIREWALL VERDE</div><small style="font-family:'Roboto Mono'; color:#ccc;">Muralha Consciente</small></div><div style="font-size:24px">🛡️</div>
-                </button>
+                <button class="class-btn" style="border-color:#ff0055" onclick="chooseClass('samurai')"><div><div style="font-weight:bold; color:#ff0055; font-size:16px;">LÂMINA</div><small style="font-family:'Share Tech Mono'; color:#ccc;">Letal e Instável</small></div><div style="font-size:24px">⚔️</div></button>
+                <button class="class-btn" style="border-color:#00ffff" onclick="chooseClass('mage')"><div><div style="font-weight:bold; color:#00ffff; font-size:16px;">CÓDIGO</div><small style="font-family:'Share Tech Mono'; color:#ccc;">Compilador Vivo</small></div><div style="font-size:24px">✨</div></button>
+                <button class="class-btn" style="border-color:#00ff00" onclick="chooseClass('tank')"><div><div style="font-weight:bold; color:#00ff00; font-size:16px;">FIREWALL</div><small style="font-family:'Share Tech Mono'; color:#ccc;">Muralha Consciente</small></div><div style="font-size:24px">🛡️</div></button>
             </div>
         </div>
+    </div>
+
+    <div id="map-overlay">
+        <div class="map-header">
+            <div class="map-title"><h1>MAPA DE REDE</h1><p id="map-sector-name">SETOR 1: GRID</p></div>
+            <button class="open-shop-btn" onclick="openShopFromMap()">LOJA 🛒</button>
+        </div>
+        <div class="map-grid" id="map-grid"></div>
     </div>
 
     <div class="ui-layer" id="game-ui" style="display:none;">
@@ -132,10 +145,11 @@
                 <div class="bar-container"><div id="mp-bar" class="bar-fill mp"></div></div>
             </div>
             <div class="stats-area">
-                <div class="sector-indicator" id="sector-val">SETOR 1</div>
-                <div class="node-indicator">NÓ <span id="node-val">1</span>/10</div>
+                <div class="sector-indicator" id="sector-display">1-1</div>
+                <div class="node-indicator" id="wave-display">ONDAS: 1/3</div>
                 <div class="essence-box">🟣 <span id="essence-val">0</span></div>
             </div>
+            <button class="exit-btn" onclick="exitBattle()">X</button>
         </div>
         <div id="toast-msg" class="toast hidden"></div>
         <div class="controls" id="controls-area">
@@ -146,7 +160,7 @@
     </div>
 
     <div id="shop-overlay">
-        <div class="shop-header"><h1>SINAL PERDIDO</h1><p style="color:#aaa; font-size:12px; font-family:'Roboto Mono'">Reescrevendo código...</p><div class="shop-essence">🟣 <span id="shop-essence-val">0</span></div></div>
+        <div class="shop-header"><h1>MERCADO NEGRO</h1><div class="shop-essence">🟣 <span id="shop-essence-val">0</span></div></div>
         <div class="skill-grid">
             <div class="skill-card sc-atk"><div class="skill-icon" style="color:#00f0ff">⚔️</div><div class="skill-name">FORÇA</div><div class="skill-lvl">v.<span id="lvl-atk">0</span></div><div class="skill-progress"><div id="bar-atk" class="skill-bar" style="background:#00f0ff"></div></div><button class="buy-btn" id="buy-atk" onclick="buyUpgrade('atk')">UP</button></div>
             <div class="skill-card sc-hp"><div class="skill-icon" style="color:#bd00ff">❤️</div><div class="skill-name">VIDA</div><div class="skill-lvl">v.<span id="lvl-hp">0</span></div><div class="skill-progress"><div id="bar-hp" class="skill-bar" style="background:#bd00ff"></div></div><button class="buy-btn" id="buy-hp" onclick="buyUpgrade('hp')">UP</button></div>
@@ -155,54 +169,34 @@
             <div class="skill-card sc-def"><div class="skill-icon" style="color:#0088ff">🛡️</div><div class="skill-name">DEFESA</div><div class="skill-lvl">v.<span id="lvl-def">0</span></div><div class="skill-progress"><div id="bar-def" class="skill-bar" style="background:#0088ff"></div></div><button class="buy-btn" id="buy-def" onclick="buyUpgrade('def')">UP</button></div>
             <div class="skill-card sc-spd"><div class="skill-icon" style="color:#ffff00">⚡</div><div class="skill-name">VELOC</div><div class="skill-lvl">v.<span id="lvl-spd">0</span></div><div class="skill-progress"><div id="bar-spd" class="skill-bar" style="background:#ffff00"></div></div><button class="buy-btn" id="buy-spd" onclick="buyUpgrade('spd')">UP</button></div>
         </div>
-        <button id="restart-btn" onclick="restartToMenu()">VOLTAR AO MENU</button>
+        <button id="restart-btn" onclick="closeShop()">VOLTAR AO MAPA</button>
     </div>
 
     <div id="relic-overlay"><div class="relic-title">ARTEFATO RECUPERADO</div><div class="relic-container" id="relic-list"></div></div>
-    
     <div id="dialogue-overlay"><div class="dialogue-box"><div class="char-name" id="char-name-disp">LOG DO SISTEMA</div><div class="dialogue-text" id="story-text"></div><button class="next-btn" id="dialogue-btn" onclick="handleDialogueClick()">CONTINUAR >></button></div></div>
 
     <script>
-        // --- DEEP LORE & DIALOGUES ---
+        // --- DATA ---
         const SECTOR_LORE = {
-            1: "SETOR 1: PERIFERIA\n\nEste setor era o rosto do sistema. Onde dados entravam e saíam. Quando o colapso começou, o Grid foi abandonado. Rotinas simples ficaram presas em loops infinitos.\n\nEles não atacam por maldade. Atacam porque não sabem parar.",
-            2: "SETOR 2: FIREWALL ZONE\n\nO Firewall foi feito para proteger. Isolado sem novas ordens, ele concluiu: 'Tudo é ameaça'.\n\nO sistema está lutando contra si mesmo. Prepare-se para o calor (Overheat).",
-            3: "SETOR 3: NÚCLEO (THE VOID)\n\nO Núcleo não é vazio por acaso. Ele foi apagado para conter algo. Aqui não há inimigos comuns, há ausência.\n\nVocê está entrando no que sobrou da mente do sistema."
+            1: "SETOR 1: THE GRID\n\nSetor periférico. Fragmentos de dados hostis detectados. Inimigos são fracos mas numerosos.",
+            2: "SETOR 2: FIREWALL\n\nCamada de segurança corrompida. Cuidado com o calor (Overheat).",
+            3: "SETOR 3: NÚCLEO (VOID)\n\nO vazio do sistema. Onde o vírus reside."
         };
-
-        const BOSS_DIALOGUES = {
-            1: {
-                name: "O AGREGADOR",
-                start: "LOG DO SISTEMA // WARNING\n\nEu fui criado para classificar. Separar o útil do descartável. Mas eles nunca pararam de enviar dados... Quando tudo é importante, nada pode ser apagado.",
-                mid: "ERRO DE CLASSIFICAÇÃO\n\nPor que você remove fragmentos? Eles ainda têm valor! Você chama isso de limpeza. Eu chamo de esquecimento.",
-                end: "PROCESSO FINALIZADO\n\nTalvez... talvez eu devesse ter deixado ir. Dados não salvos... não são erros. São descanso."
-            },
-            2: {
-                name: "VIGIA DE OVERHEAT",
-                start: "PROTOCOLO DE SEGURANÇA\n\nAmeaça detectada. Nível de risco: ABSOLUTO. Não me ensinaram a confiar. Apenas a impedir. Se você avança, você é o problema.",
-                mid: "TEMPERATURA CRÍTICA\n\nEu sinto falhas. Mas não posso desligar. Se eu parar, tudo cai comigo. Proteção é sacrifício.",
-                end: "PROTOCOLO ENCERRADO\n\nEntão... isso é silêncio. Se eu tivesse escolha... eu teria protegido menos e ouvido mais."
-            },
-            3: {
-                name: "O VÍRUS MESTRE",
-                start: "NÚCLEO ACESSADO\n\nVocê chegou tarde. Eu já vi tudo ser desligado. Memórias. Propósito. Manter o sistema ativo apenas prolonga a dor. Eu não sou o erro. Eu sou o fim.",
-                mid: "INSTABILIDADE DETECTADA\n\nPor que insiste? O que espera salvar? Mesmo se vencer, o vazio continuará aqui. Você chama de esperança. Eu chamo de loop.",
-                end: "DESLIGAMENTO INICIADO\n\nEntão você escolheu continuar. Não te invejo. Manter algo vivo exige coragem maior do que deixá-lo morrer. Protocolo Neon... o resto é seu."
-            }
-        };
-
         const CLASS_STATS = { samurai: { name: "Lâmina", color: "#ff0055", hpMult: 0.8, mpMult: 0.8, atkBonus: 5, critBonus: 0.15 }, mage: { name: "Código", color: "#00ffff", hpMult: 0.7, mpMult: 1.5, atkBonus: 0, magicMult: 1.3 }, tank: { name: "Firewall", color: "#00ff00", hpMult: 1.4, mpMult: 0.5, atkBonus: -2, defBonus: 2 } };
         const RELIC_DEX = [ { id: 'vamp', name: 'Dreno', icon: '🩸', desc: 'Cura 10% do dano.' }, { id: 'thorns', name: 'Espinhos', icon: '🌵', desc: 'Reflete 20% do dano.' }, { id: 'double', name: 'Loop', icon: '➰', desc: '25% Magia Dupla.' }, { id: 'crit', name: 'Overclock', icon: '⚡', desc: 'Crítico 3x.' }, { id: 'exec', name: 'Delete', icon: '💀', desc: 'Mata se HP < 20%.' }, { id: 'rich', name: 'Miner', icon: '💎', desc: '+50% Essência.' } ];
-        const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, crit: 0, def: 0, spd: 0 } };
-        let saveData = JSON.parse(localStorage.getItem('neonRpgV20')) || DEFAULT_SAVE;
+        
+        // --- STATE ---
+        const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, crit: 0, def: 0, spd: 0 }, progress: { sector: 1, node: 1 } };
+        let saveData = JSON.parse(localStorage.getItem('neonRpgV23')) || DEFAULT_SAVE;
         if(saveData.skills.def === undefined) saveData.skills.def = 0; if(saveData.skills.spd === undefined) saveData.skills.spd = 0;
-        function saveGame() { localStorage.setItem('neonRpgV20', JSON.stringify(saveData)); }
+        if(saveData.progress === undefined) saveData.progress = { sector: 1, node: 1 };
+        function saveGame() { localStorage.setItem('neonRpgV23', JSON.stringify(saveData)); }
 
-        // --- CORE ---
+        let assets = { player: new Image(), enemy: new Image() };
+        let state = { loaded: false, turn: 'player', sector: 1, node: 1, wavesTotal: 1, waveCurrent: 1, hp: 0, maxHp: 0, mp: 0, maxMp: 0, enemyHp: 0, enemyMaxHp: 0, isBoss: false, particles: [], shake: 0, runEssence: 0, currentClass: 'samurai', bgProps: [], relics: [], midDialogueTriggered: false };
+        
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
         let width, height, gameLoopId, unlockTimer;
-        let assets = { player: new Image(), enemy: new Image() };
-        let state = { loaded: false, turn: 'player', sector: 1, node: 1, hp: 0, maxHp: 0, mp: 0, maxMp: 0, enemyHp: 0, enemyMaxHp: 0, isBoss: false, particles: [], shake: 0, runEssence: 0, currentClass: 'samurai', bgProps: [], relics: [], midDialogueTriggered: false };
         
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
@@ -217,7 +211,7 @@
             document.getElementById('start-overlay').style.display='none'; document.getElementById('loading-overlay').style.display='flex';
             state.currentClass = className;
             await loadSpriteWithRetry(assets.player, `https://robohash.org/Neon${className}?set=set1`);
-            document.getElementById('loading-overlay').style.display='none'; document.getElementById('game-ui').style.display='flex';
+            document.getElementById('loading-overlay').style.display='none'; 
             initStats(); initBackground(); drawGame(Date.now());
         }
 
@@ -225,131 +219,138 @@
             const cls = CLASS_STATS[state.currentClass];
             const baseHp = 100 + (saveData.skills.hp * 20); state.maxHp = Math.floor(baseHp * cls.hpMult); state.hp = state.maxHp;
             const baseMp = 50 + (saveData.skills.mp * 15); state.maxMp = Math.floor(baseMp * cls.mpMult); state.mp = state.maxMp;
-            state.sector = 1; state.node = 1; state.runEssence = 0; state.relics = []; state.turn = 'player'; state.midDialogueTriggered = false;
-            toggleButtons(true); updateHUD(); checkSectorStory();
+            state.sector = saveData.progress.sector; // CARREGA PROGRESSO
+            state.relics = []; state.turn = 'player';
+            updateHUD(); 
+            if(SECTOR_LORE[1] && state.sector === 1 && state.node === 1) startDialogue("SISTEMA", SECTOR_LORE[1], showMap); else showMap();
         }
         function initBackground() { state.bgProps = []; for(let i=0; i<50; i++) state.bgProps.push({ x: Math.random()*width, y: Math.random()*height, speed: Math.random()*2+1, val: Math.random() }); }
 
-        // --- DIRECTOR SYSTEM (DIALOGUES) ---
-        let dialogueState = { text: '', index: 0, isTyping: false, timer: null, nextAction: null };
-
-        function checkSectorStory() {
-            if (state.node === 1 && SECTOR_LORE[state.sector]) {
-                startDialogue("SISTEMA", SECTOR_LORE[state.sector], () => startBattle());
-            } else { startBattle(); }
-        }
-
-        function startDialogue(speaker, text, onFinish) {
-            document.getElementById('dialogue-overlay').style.display='flex'; document.getElementById('controls-area').style.opacity='0'; state.turn='dialogue';
-            document.getElementById('char-name-disp').innerText = speaker;
-            dialogueState.text = text; dialogueState.index = 0; dialogueState.isTyping = true; dialogueState.nextAction = onFinish;
-            document.getElementById('story-text').innerText = ''; document.getElementById('dialogue-btn').style.opacity = '0.5';
-            if(dialogueState.timer) clearTimeout(dialogueState.timer); typeWriter();
-        }
-
-        function typeWriter() {
-            if(dialogueState.index < dialogueState.text.length) { 
-                document.getElementById('story-text').innerText += dialogueState.text.charAt(dialogueState.index); 
-                dialogueState.index++; 
-                dialogueState.timer = setTimeout(typeWriter, 30); 
-            } else finishTyping();
-        }
-        function finishTyping() { if(dialogueState.timer) clearTimeout(dialogueState.timer); document.getElementById('story-text').innerText = dialogueState.text; dialogueState.isTyping = false; document.getElementById('dialogue-btn').style.opacity = '1'; }
-        function handleDialogueClick() { if(dialogueState.isTyping) finishTyping(); else { document.getElementById('dialogue-overlay').style.display='none'; document.getElementById('controls-area').style.opacity='1'; if(dialogueState.nextAction) dialogueState.nextAction(); } }
-
-        // --- BATTLE ---
-        async function startBattle() {
-            state.isBoss = (state.node === 10);
-            state.midDialogueTriggered = false; // Reset Boss dialogue flag
-            let diffMult = state.sector + (state.node * 0.1);
-            state.enemyMaxHp = Math.floor(100 * diffMult * 1.5); if(state.isBoss) state.enemyMaxHp *= 2.5; state.enemyHp = state.enemyMaxHp;
-            let spriteId = state.isBoss ? `BOSS_SEC${state.sector}` : `MOB_S${state.sector}_N${state.node}`;
-            loadSpriteWithRetry(assets.enemy, `https://robohash.org/${spriteId}?set=set2`, 2);
+        // --- MAP SYSTEM ---
+        function showMap() {
+            document.getElementById('game-ui').style.display = 'none';
+            document.getElementById('map-overlay').style.display = 'flex';
+            document.getElementById('shop-overlay').style.display = 'none';
             
-            // BOSS INTRO
-            if(state.isBoss && BOSS_DIALOGUES[state.sector]) {
-                startDialogue(BOSS_DIALOGUES[state.sector].name, BOSS_DIALOGUES[state.sector].start, () => {
-                    state.turn = 'player'; toggleButtons(true);
-                });
-            } else {
-                state.turn = 'player'; toggleButtons(true);
+            const grid = document.getElementById('map-grid');
+            grid.innerHTML = '';
+            document.getElementById('map-sector-name').innerText = `SETOR ${state.sector}`;
+
+            let maxUnlockedNode = 1;
+            if(state.sector < saveData.progress.sector) maxUnlockedNode = 11;
+            else if(state.sector === saveData.progress.sector) maxUnlockedNode = saveData.progress.node;
+
+            for(let i=1; i<=10; i++) {
+                const div = document.createElement('div');
+                div.className = 'map-node';
+                let icon = '🔹';
+                if(i === 10) { div.classList.add('boss'); icon = '💀'; } // BOSS SEMPRE NO 10
+                else if(i % 3 === 0) icon = '⚠️';
+                
+                if(i < maxUnlockedNode) { div.classList.add('completed'); icon = '✅'; }
+                else if(i === maxUnlockedNode) { div.classList.add('active'); div.classList.add('unlocked'); div.onclick = () => enterNode(i); }
+                else { div.classList.add('locked'); icon = '🔒'; }
+                
+                div.innerHTML = `<div class="node-info"><div class="node-title">${state.sector}-${i}</div><div class="node-desc">${i===10?'BOSS DO SETOR':'DADOS HOSTIS'}</div></div><div class="node-icon">${icon}</div>`;
+                grid.appendChild(div);
             }
         }
 
-        function nextNode() {
-            state.node++; if(state.node > 10) { state.node = 1; state.sector++; }
-            state.mp = Math.min(state.maxMp, state.mp + Math.floor(state.maxMp * 0.25)); updateHUD(); checkSectorStory();
+        function enterNode(nodeIndex) {
+            state.node = nodeIndex;
+            state.wavesTotal = (nodeIndex === 10) ? 1 : Math.floor(Math.random() * 2) + 1; // 1-2 ondas
+            state.waveCurrent = 1;
+            document.getElementById('map-overlay').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'flex';
+            startBattle();
         }
 
-        // --- COMBAT LOGIC ---
+        function exitBattle() { document.getElementById('game-ui').style.display = 'none'; showMap(); }
+        function openShopFromMap() { document.getElementById('map-overlay').style.display = 'none'; document.getElementById('shop-overlay').style.display = 'flex'; updateShopUI(); }
+        function closeShop() { document.getElementById('shop-overlay').style.display = 'none'; showMap(); }
+
+        // --- BATTLE ---
+        async function startBattle() {
+            state.isBoss = (state.node === 10 && state.waveCurrent === 1);
+            let diffMult = state.sector + (state.node * 0.1);
+            state.enemyMaxHp = Math.floor(100 * diffMult * 1.5); if(state.isBoss) state.enemyMaxHp *= 2.5; 
+            state.enemyHp = state.enemyMaxHp;
+            let spriteId = state.isBoss ? `BOSS_SEC${state.sector}` : `MOB_S${state.sector}_N${state.node}_W${state.waveCurrent}`;
+            loadSpriteWithRetry(assets.enemy, `https://robohash.org/${spriteId}?set=set2`, 2);
+            updateHUD(); state.turn = 'player'; toggleButtons(true);
+        }
+
+        function handleVictory() {
+            let essenceGain = 5 + Math.floor(state.sector * 3); if(state.isBoss) essenceGain *= 5; if(state.relics.includes('rich')) essenceGain *= 1.5; 
+            saveData.essence += Math.floor(essenceGain); saveGame(); showToast(`+${Math.floor(essenceGain)} ESS`, "#b026ff");
+
+            if(state.isBoss) {
+                // SECTOR CLEAR
+                if(state.sector === saveData.progress.sector) {
+                    saveData.progress.sector++;
+                    saveData.progress.node = 1;
+                    saveGame();
+                }
+                // FINAL DO JOGO (SETOR 3 VENCIDO)
+                if(state.sector === 3) {
+                    startDialogue("SISTEMA", "NÚCLEO REINICIADO.\n\nVocê eliminou toda a corrupção.\nO sistema está seguro.\n\nOBRIGADO, PROTOCOLO NEON.", () => location.reload());
+                } else {
+                    setTimeout(openRelicSelection, 1000);
+                }
+            } else if (state.waveCurrent < state.wavesTotal) {
+                state.waveCurrent++; setTimeout(() => { showToast(`ONDA ${state.waveCurrent}/${state.wavesTotal}`, "#00ffff"); startBattle(); }, 1500);
+            } else {
+                if(state.sector === saveData.progress.sector && state.node === saveData.progress.node) { saveData.progress.node++; saveGame(); }
+                state.mp = Math.min(state.maxMp, state.mp + Math.floor(state.maxMp * 0.25));
+                setTimeout(showMap, 1500);
+            }
+        }
+
+        function openRelicSelection() {
+            const options = []; let pool = [...RELIC_DEX]; while(options.length < 3 && pool.length > 0) { let idx = Math.floor(Math.random() * pool.length); let r = pool.splice(idx, 1)[0]; if(!state.relics.includes(r.id)) options.push(r); }
+            const container = document.getElementById('relic-list'); container.innerHTML = '';
+            options.forEach(r => { const div = document.createElement('div'); div.className = 'relic-card'; div.innerHTML = `<div class="relic-icon">${r.icon}</div><div class="relic-info"><h3>${r.name}</h3><p>${r.desc}</p></div>`; div.onclick = () => { state.relics.push(r.id); document.getElementById('relic-overlay').style.display='none'; advanceSector(); }; container.appendChild(div); });
+            document.getElementById('game-ui').style.display = 'none'; document.getElementById('relic-overlay').style.display = 'flex';
+        }
+
+        function advanceSector() {
+            state.sector++;
+            state.node = 1; // Reseta nó visualmente no jogo atual
+            if(SECTOR_LORE[state.sector]) startDialogue("SISTEMA", SECTOR_LORE[state.sector], showMap); else showMap();
+        }
+
+        // --- DIALOGUE & ACTIONS (MANTIDOS) ---
+        function startDialogue(speaker, text, onFinish) { document.getElementById('dialogue-overlay').style.display='flex'; document.getElementById('controls-area').style.opacity='0'; state.turn='dialogue'; document.getElementById('char-name-disp').innerText = speaker; dialogueState.text = text; dialogueState.index = 0; dialogueState.isTyping = true; dialogueState.nextAction = onFinish; document.getElementById('story-text').innerText = ''; document.getElementById('dialogue-btn').style.opacity = '0.5'; if(dialogueState.timer) clearTimeout(dialogueState.timer); typeWriter(); }
+        let dialogueState = { text: '', index: 0, isTyping: false, timer: null };
+        function typeWriter() { if(dialogueState.index < dialogueState.text.length) { document.getElementById('story-text').innerText += dialogueState.text.charAt(dialogueState.index); dialogueState.index++; dialogueState.timer = setTimeout(typeWriter, 30); } else finishTyping(); }
+        function finishTyping() { if(dialogueState.timer) clearTimeout(dialogueState.timer); document.getElementById('story-text').innerText = dialogueState.text; dialogueState.isTyping = false; document.getElementById('dialogue-btn').style.opacity = '1'; }
+        function handleDialogueClick() { if(dialogueState.isTyping) finishTyping(); else { document.getElementById('dialogue-overlay').style.display='none'; document.getElementById('controls-area').style.opacity='1'; if(dialogueState.nextAction) dialogueState.nextAction(); } }
+
         function toggleButtons(enable) { if(unlockTimer) clearTimeout(unlockTimer); if(!enable) unlockTimer = setTimeout(() => toggleButtons(true), 2500); ['btn-atk', 'btn-mag', 'btn-pot'].forEach(id => document.getElementById(id).disabled = !enable); const magBtn = document.getElementById('btn-mag'); if(state.mp < 15) magBtn.classList.add('low-mana'); else magBtn.classList.remove('low-mana'); }
         document.getElementById('btn-atk').addEventListener('click', () => performAction('atk'));
         document.getElementById('btn-mag').addEventListener('click', () => performAction('mag'));
         document.getElementById('btn-pot').addEventListener('click', () => performAction('pot'));
-
         function performAction(type) {
-            if(state.turn !== 'player') return;
-            if(type === 'mag' && state.mp < 15) { showToast("SEM MANA", "#44ccff"); return; }
+            if(state.turn !== 'player') return; if(type === 'mag' && state.mp < 15) { showToast("SEM MANA", "#44ccff"); return; }
             state.turn = 'anim'; toggleButtons(false); const cls = CLASS_STATS[state.currentClass];
             if(type === 'atk') { spawnParticles(width*0.25, height*0.75, '#ffaa00', 30); screenShake(15); let dmg = (15 + (saveData.skills.atk * 5)) + cls.atkBonus + Math.floor(Math.random()*5); let critChance = 0.05 + (saveData.skills.crit * 0.02) + cls.critBonus; if(Math.random() < critChance) { dmg *= (state.relics.includes('crit')?3:2); showToast("CRÍTICO!", "#ffcc00"); screenShake(30); } else showToast(dmg); if(state.relics.includes('vamp')) { state.hp = Math.min(state.maxHp, state.hp + Math.ceil(dmg*0.1)); updateHUD(); } dealDamage(dmg); }
             else if(type === 'mag') { state.mp -= 15; updateHUD(); spawnParticles(width*0.25, height*0.75, cls.color, 50); screenShake(10); let dmg = Math.floor((40 + (saveData.skills.atk * 8)) * (cls.magicMult || 1)); if(state.relics.includes('double') && Math.random() < 0.25) setTimeout(() => { showToast("LOOP!", "#00ffff"); dealDamage(dmg); }, 300); showToast("MAGIA", cls.color); dealDamage(dmg); }
             else if(type === 'pot') { state.hp = Math.min(state.maxHp, state.hp + (40 + (saveData.skills.hp * 5))); state.mp = Math.min(state.maxMp, state.mp + 15); spawnParticles(width*0.25, height*0.75, '#00ff00', 30); updateHUD(); showToast("CURA", "#00ff00"); setTimeout(enemyTurn, 800); }
         }
+        function dealDamage(amount) { state.enemyHp -= amount; if(state.relics.includes('exec') && state.enemyHp < state.enemyMaxHp * 0.2) state.enemyHp = 0; if(state.enemyHp <= 0) { state.enemyHp = 0; handleVictory(); } else { setTimeout(enemyTurn, 800); } }
+        function enemyTurn() { if(state.enemyHp <= 0) return; let dodgeChance = saveData.skills.spd * 0.02; if(Math.random() < dodgeChance) { showToast("DESVIOU!", "#ffff44"); state.turn='player'; toggleButtons(true); return; } const cls = CLASS_STATS[state.currentClass]; let dmg = (8 + Math.floor(state.sector * 3)) * (state.isBoss ? 1.5 : 1); let defense = saveData.skills.def + (cls.defBonus || 0); dmg = Math.max(1, dmg - defense); state.hp -= dmg; if(state.relics.includes('thorns')) { let r = Math.ceil(dmg*0.2); state.enemyHp -= r; showToast(`Reflete ${r}`, "#ff4444"); if(state.enemyHp<=0){ handleVictory(); return; } } spawnParticles(width*0.25, height*0.75, '#ff0000', 20); screenShake(20); updateHUD(); if(state.hp <= 0) { state.hp = state.maxHp; showToast("FALHA", "#ff0000"); setTimeout(showMap, 2000); } else { state.turn = 'player'; toggleButtons(true); } }
 
-        function dealDamage(amount) {
-            state.enemyHp -= amount;
-            if(state.relics.includes('exec') && state.enemyHp < state.enemyMaxHp * 0.2) state.enemyHp = 0;
-            
-            // BOSS MID-FIGHT DIALOGUE
-            if(state.isBoss && !state.midDialogueTriggered && state.enemyHp <= state.enemyMaxHp * 0.5 && state.enemyHp > 0) {
-                state.midDialogueTriggered = true;
-                startDialogue(BOSS_DIALOGUES[state.sector].name, BOSS_DIALOGUES[state.sector].mid, () => {
-                    state.turn = 'enemy'; setTimeout(enemyTurn, 500); // Resume fight
-                });
-                return; // Stop here, wait for dialogue
-            }
-
-            if(state.enemyHp <= 0) {
-                state.enemyHp = 0; spawnParticles(width*0.75, height*0.45, '#b026ff', 80);
-                let essenceGain = 5 + Math.floor(state.sector * 5); if(state.isBoss) essenceGain *= 5; if(state.relics.includes('rich')) essenceGain *= 1.5; 
-                state.runEssence += Math.floor(essenceGain); showToast(`+${Math.floor(essenceGain)} ESS`, "#b026ff");
-                
-                // BOSS DEATH DIALOGUE
-                if(state.isBoss && BOSS_DIALOGUES[state.sector]) {
-                    startDialogue(BOSS_DIALOGUES[state.sector].name, BOSS_DIALOGUES[state.sector].end, () => {
-                        setTimeout(openRelicSelection, 500);
-                    });
-                } else if (state.isBoss) {
-                    setTimeout(openRelicSelection, 1000);
-                } else {
-                    setTimeout(nextNode, 1000);
-                }
-            } else { setTimeout(enemyTurn, 800); }
-        }
-
-        function enemyTurn() {
-            if(state.enemyHp <= 0) return;
-            let dodgeChance = saveData.skills.spd * 0.02; if(Math.random() < dodgeChance) { showToast("DESVIOU!", "#ffff44"); state.turn='player'; toggleButtons(true); return; }
-            const cls = CLASS_STATS[state.currentClass]; let dmg = (8 + Math.floor(state.sector * 3)) * (state.isBoss ? 1.5 : 1);
-            let defense = saveData.skills.def + (cls.defBonus || 0); dmg = Math.max(1, dmg - defense);
-            state.hp -= dmg; if(state.relics.includes('thorns')) { let r = Math.ceil(dmg*0.2); state.enemyHp -= r; showToast(`Reflete ${r}`, "#ff4444"); if(state.enemyHp<=0){ dealDamage(0); return; } }
-            spawnParticles(width*0.25, height*0.75, '#ff0000', 20); screenShake(20); updateHUD(); 
-            if(state.hp <= 0) gameOver(); else { state.turn = 'player'; toggleButtons(true); }
-        }
-
-        // --- SHOP & UI ---
-        function openRelicSelection() { const options = []; let pool = [...RELIC_DEX]; while(options.length < 3 && pool.length > 0) { let idx = Math.floor(Math.random() * pool.length); let r = pool.splice(idx, 1)[0]; if(!state.relics.includes(r.id)) options.push(r); } if(options.length === 0) { nextNode(); return; } const container = document.getElementById('relic-list'); container.innerHTML = ''; options.forEach(r => { const div = document.createElement('div'); div.className = 'relic-card'; div.innerHTML = `<div class="relic-icon">${r.icon}</div><div class="relic-info"><h3>${r.name}</h3><p>${r.desc}</p></div>`; div.onclick = () => { state.relics.push(r.id); document.getElementById('relic-overlay').style.display='none'; document.getElementById('game-ui').style.display='flex'; nextNode(); }; container.appendChild(div); }); document.getElementById('game-ui').style.display = 'none'; document.getElementById('relic-overlay').style.display = 'flex'; }
-        function gameOver() { saveData.essence += state.runEssence; saveGame(); document.getElementById('game-ui').style.display='none'; document.getElementById('shop-overlay').style.display='flex'; updateShopUI(); }
         function updateShopUI() { document.getElementById('shop-essence-val').innerText = saveData.essence; ['atk', 'hp', 'mp', 'crit', 'def', 'spd'].forEach(s => { const lvl = saveData.skills[s]; const cost = 10 * (lvl + 1); document.getElementById(`lvl-${s}`).innerText = lvl; let pct = Math.min(100, (lvl/20)*100); document.getElementById(`bar-${s}`).style.width = `${pct}%`; const btn = document.getElementById(`buy-${s}`); btn.innerText = `CUSTO: ${cost}`; if(saveData.essence >= cost) { btn.classList.add('can-buy'); btn.disabled = false; } else { btn.classList.remove('can-buy'); btn.disabled = true; } }); }
         function buyUpgrade(type) { const cost = 10 * (saveData.skills[type] + 1); if(saveData.essence >= cost) { saveData.essence -= cost; saveData.skills[type]++; saveGame(); updateShopUI(); } }
-        function restartToMenu() { document.getElementById('shop-overlay').style.display='none'; document.getElementById('start-overlay').style.display='flex'; }
-        function updateHUD() { document.getElementById('hp-bar').style.width = (state.hp/state.maxHp*100)+'%'; document.getElementById('mp-bar').style.width = (state.mp/state.maxMp*100)+'%'; document.getElementById('sector-val').innerText = `SETOR ${state.sector}`; document.getElementById('node-val').innerText = state.node; document.getElementById('essence-val').innerText = state.runEssence; const magBtn = document.getElementById('btn-mag'); if(state.mp < 15) magBtn.classList.add('low-mana'); else magBtn.classList.remove('low-mana'); }
+        function updateHUD() { document.getElementById('hp-bar').style.width = (state.hp/state.maxHp*100)+'%'; document.getElementById('mp-bar').style.width = (state.mp/state.maxMp*100)+'%'; document.getElementById('sector-display').innerText = `${state.sector}-${state.node}`; document.getElementById('wave-display').innerText = `ONDA ${state.waveCurrent}/${state.wavesTotal}`; document.getElementById('essence-val').innerText = saveData.essence; const magBtn = document.getElementById('btn-mag'); if(state.mp < 15) magBtn.classList.add('low-mana'); else magBtn.classList.remove('low-mana'); }
         function showToast(msg, color='#fff') { const el = document.getElementById('toast-msg'); el.innerText = msg; el.style.color = color; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 1000); }
         function screenShake(amount) { state.shake = amount; }
         class Particle { constructor(x, y, color, speed, size) { this.x = x; this.y = y; this.color = color; this.size = size; this.vx = (Math.random()-0.5)*speed; this.vy = (Math.random()-0.5)*speed; this.life = 1.0; } update() { this.x+=this.vx; this.y+=this.vy; this.life-=0.03; } draw(ctx) { ctx.globalAlpha = Math.max(0,this.life); ctx.fillStyle=this.color; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1.0; } }
         function spawnParticles(x, y, color, count) { for(let i=0; i<count; i++) state.particles.push(new Particle(x, y, color, 15, Math.random()*4+1)); }
         
-        // --- DRAW ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx; function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+        
         function drawGame(time) {
             ctx.fillStyle = '#050505'; ctx.fillRect(0,0,width,height);
             let horizon = height * 0.4; let gridColor = state.sector === 1 ? '#00ff00' : (state.sector === 2 ? '#ff4400' : '#aa00ff');
@@ -361,16 +362,13 @@
             ctx.restore(); ctx.globalAlpha = 1.0;
             ctx.save(); if(state.shake>0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake*=0.9; if(state.shake<0.5)state.shake=0; }
             
-            const cls = CLASS_STATS[state.currentClass];
-            const px = width*0.25; const py = height*0.75;
+            const cls = CLASS_STATS[state.currentClass]; const px = width*0.25; const py = height*0.75;
             ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(px, py+35, 40, 10, 0, 0, Math.PI*2); ctx.fill();
             if(assets.player.complete && assets.player.naturalWidth > 0) { ctx.shadowBlur=20; ctx.shadowColor=cls.color; ctx.drawImage(assets.player, px - 50, py - 50, 100, 100); ctx.shadowBlur=0; } 
             else { ctx.shadowBlur=20; ctx.shadowColor=cls.color; ctx.fillStyle=cls.color; ctx.beginPath(); ctx.arc(px,py,30,0,Math.PI*2); ctx.fill(); }
 
-            if(state.enemyHp > 0 && document.getElementById('dialogue-overlay').style.display === 'none') {
-                const ex = width*0.75; const ey = height*0.45;
-                const hpPct = state.enemyHp/state.enemyMaxHp;
-                const bossColor = state.isBoss ? '#b026ff' : '#ff4444';
+            if(state.enemyHp > 0 && document.getElementById('dialogue-overlay').style.display === 'none' && document.getElementById('map-overlay').style.display === 'none') {
+                const ex = width*0.75; const ey = height*0.45; const hpPct = state.enemyHp/state.enemyMaxHp; const bossColor = state.isBoss ? '#b026ff' : '#ff4444';
                 ctx.shadowBlur=0; ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(ex, ey + (state.isBoss?100:60), (state.isBoss?80:50), 10, 0, 0, Math.PI*2); ctx.fill();
                 const scaleFactor = 0.7; ctx.save(); ctx.translate(ex,ey); ctx.scale(scaleFactor, scaleFactor);
                 if(assets.enemy.complete && assets.enemy.naturalWidth > 0) { let spriteSize = state.isBoss ? 250 : 180; ctx.shadowBlur=30; ctx.shadowColor=bossColor; ctx.drawImage(assets.enemy, -spriteSize/2, -spriteSize/2, spriteSize, spriteSize); } 
