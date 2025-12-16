@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon RPG: V10 Dialogue Anim</title>
+    <title>Neon RPG: Protocolo Final</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
@@ -50,8 +50,8 @@
         .buy-btn.can-buy { background: #b026ff; color: black; font-weight: bold; }
         #restart-btn { width: 100%; max-width: 300px; padding: 15px; background: #ff4444; border: none; font-family: 'Orbitron'; font-size: 16px; font-weight: bold; color: black; border-radius: 8px; cursor: pointer; margin-top: 20px; }
 
-        /* DIALOGUE (NOVO ESTILO) */
-        #dialogue-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; flex-direction: column; justify-content: flex-end; padding: 20px; pointer-events: auto; z-index: 20; }
+        /* DIALOGUE (TYPEWRITER STYLE) */
+        #dialogue-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; justify-content: flex-end; padding: 20px; pointer-events: auto; z-index: 20; }
         .dialogue-box { background: rgba(10, 15, 25, 0.95); border: 1px solid #00ffff; border-top: 3px solid #00ffff; padding: 25px; box-shadow: 0 -5px 20px rgba(0, 255, 255, 0.2); backdrop-filter: blur(10px); margin-bottom: 20px; border-radius: 12px; }
         .char-name { color: #00ffff; font-size: 14px; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; }
         .char-name::before { content: '►'; margin-right: 10px; font-size: 10px; animation: blink 1s infinite; }
@@ -60,10 +60,14 @@
         .next-btn:active { background: #00ffff; color: #000; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* START */
+        /* START SCREEN (LORE) */
         #start-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #050505; z-index: 40; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: auto; padding: 20px; text-align: center; }
-        .class-container { display: grid; gap: 15px; width: 100%; max-width: 400px; margin-top: 20px; }
-        .class-btn { padding: 15px; border: 1px solid; background: rgba(255,255,255,0.05); color: white; border-radius: 5px; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+        .start-content { max-width: 500px; width: 100%; }
+        .intro-text { font-family: 'Roboto Mono'; font-size: 12px; color: #aaa; margin-bottom: 30px; line-height: 1.6; text-align: center; border-left: 2px solid #333; padding-left: 15px; margin-left: 10px; text-align: left; }
+        .intro-text strong { color: white; }
+        .class-container { display: grid; gap: 15px; width: 100%; }
+        .class-btn { padding: 15px; border: 1px solid; background: rgba(255,255,255,0.05); color: white; border-radius: 5px; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; }
+        .class-btn:active { transform: scale(0.98); background: rgba(255,255,255,0.1); }
         
         .toast { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold; color: #fff; text-shadow: 0 0 10px #fff; opacity: 0; transition: opacity 0.5s, transform 0.5s; z-index: 15; }
         .toast.show { opacity: 1; transform: translate(-50%, -80%); }
@@ -73,12 +77,43 @@
     <canvas id="gameCanvas"></canvas>
 
     <div id="start-overlay">
-        <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 10px;">NEON RPG V10</h1>
-        <p style="color:#888; font-size:12px;">Sistema de Narrativa Dinâmica.</p>
-        <div class="class-container">
-            <button class="class-btn" style="border-color:#ff0055" onclick="chooseClass('samurai')"><div><div style="font-weight:bold; color:#ff0055">LÂMINA</div><small>Crítico + Rapidez</small></div><div style="font-size:20px">⚔️</div></button>
-            <button class="class-btn" style="border-color:#00ffff" onclick="chooseClass('mage')"><div><div style="font-weight:bold; color:#00ffff">CÓDIGO</div><small>Magia + MP</small></div><div style="font-size:20px">✨</div></button>
-            <button class="class-btn" style="border-color:#00ff00" onclick="chooseClass('tank')"><div><div style="font-weight:bold; color:#00ff00">FIREWALL</div><small>Vida + Defesa</small></div><div style="font-size:20px">🛡️</div></button>
+        <div class="start-content">
+            <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 15px; font-size: 32px;">NEON PROTOCOL</h1>
+            
+            <div class="intro-text">
+                AVISO DO SISTEMA: <br><br>
+                O Mainframe foi corrompido. Vírus desconhecidos tomaram os setores de memória. <br><br>
+                Você é o <strong>Protocolo Neon</strong>, a última defesa.
+                Sua missão: Eliminar a corrupção, coletar artefatos e reiniciar o Núcleo.
+            </div>
+            
+            <p style="color:#fff; font-size:12px; margin-bottom:15px; text-align: left; margin-left: 10px; font-weight: bold;">SELECIONE SEU MÓDULO:</p>
+            
+            <div class="class-container">
+                <button class="class-btn" style="border-color:#ff0055" onclick="chooseClass('samurai')">
+                    <div>
+                        <div style="font-weight:bold; color:#ff0055; font-size: 16px;">LÂMINA VERMELHA</div>
+                        <small style="font-family:'Roboto Mono'; font-size:11px; color:#ccc;">Focado em Dano Crítico.</small>
+                    </div>
+                    <div style="font-size:24px">⚔️</div>
+                </button>
+
+                <button class="class-btn" style="border-color:#00ffff" onclick="chooseClass('mage')">
+                    <div>
+                        <div style="font-weight:bold; color:#00ffff; font-size: 16px;">CÓDIGO AZUL</div>
+                        <small style="font-family:'Roboto Mono'; font-size:11px; color:#ccc;">Especialista em Magia (MP).</small>
+                    </div>
+                    <div style="font-size:24px">✨</div>
+                </button>
+
+                <button class="class-btn" style="border-color:#00ff00" onclick="chooseClass('tank')">
+                    <div>
+                        <div style="font-weight:bold; color:#00ff00; font-size: 16px;">FIREWALL VERDE</div>
+                        <small style="font-family:'Roboto Mono'; font-size:11px; color:#ccc;">Blindagem Pesada (HP).</small>
+                    </div>
+                    <div style="font-size:24px">🛡️</div>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -104,49 +139,60 @@
 
     <div id="relic-overlay"><div class="relic-title">ARTEFATO ENCONTRADO</div><div class="relic-container" id="relic-list"></div></div>
     <div id="shop-overlay">
-        <div class="shop-header"><h1>FALHA CRÍTICA</h1><p>Reinicializando...</p><div style="font-size:24px; color:#b026ff; margin-top:10px;">🟣 <span id="shop-essence-val">0</span></div></div>
+        <div class="shop-header"><h1>SINAL PERDIDO</h1><p>Código Deletado. Reconstruindo...</p><div style="font-size:24px; color:#b026ff; margin-top:10px;">🟣 <span id="shop-essence-val">0</span></div></div>
         <div class="skill-grid">
             <div class="skill-card"><span>⚔️</span><div>FORÇA</div><div style="color:#aaa">v.<span id="lvl-atk">0</span></div><button class="buy-btn" id="buy-atk" onclick="buyUpgrade('atk')">UP</button></div>
             <div class="skill-card"><span>❤️</span><div>VIDA</div><div style="color:#aaa">v.<span id="lvl-hp">0</span></div><button class="buy-btn" id="buy-hp" onclick="buyUpgrade('hp')">UP</button></div>
             <div class="skill-card"><span>✨</span><div>MANA</div><div style="color:#aaa">v.<span id="lvl-mp">0</span></div><button class="buy-btn" id="buy-mp" onclick="buyUpgrade('mp')">UP</button></div>
             <div class="skill-card"><span>🍀</span><div>SORTE</div><div style="color:#aaa">v.<span id="lvl-crit">0</span></div><button class="buy-btn" id="buy-crit" onclick="buyUpgrade('crit')">UP</button></div>
         </div>
-        <button id="restart-btn" onclick="restartToMenu()">MENU</button>
+        <button id="restart-btn" onclick="restartToMenu()">VOLTAR AO MENU</button>
     </div>
 
     <div id="dialogue-overlay">
         <div class="dialogue-box">
-            <div class="char-name">SYSTEM LOG // ENCRYPTED</div>
+            <div class="char-name">LOG DO SISTEMA // ENCRYPTED</div>
             <div class="dialogue-text" id="story-text"></div>
-            <button class="next-btn" id="dialogue-btn" onclick="handleDialogueClick()">CONTINUAR</button>
+            <button class="next-btn" id="dialogue-btn" onclick="handleDialogueClick()">EXECUTAR</button>
         </div>
     </div>
 
     <script>
-        // --- CONFIG ---
+        // --- DATA & LORE (AQUI ESTÁ A LORE COMPLETA) ---
+        const LORE = {
+            1: "Inicializando... Conexão estável.\n\nBem-vindo ao Setor Periférico (The Grid). Detecto fragmentos de dados hostis à frente. Eles são fracos, mas numerosos. \n\nInicie o protocolo de limpeza.",
+            
+            3: "Atenção: A densidade da corrupção está aumentando. \n\nEsses programas não estão apenas com defeito; eles estão sendo reescritos por algo maior. Mantenha seus escudos ativos.",
+            
+            5: "ALERTA CRÍTICO: Guardião do Setor detectado. \n\nEste Firewall antigamente protegia o sistema, agora ele bloqueia nosso acesso. Você precisa destruí-lo para obter o Artefato de Acesso.",
+            
+            6: "Acesso concedido ao Setor de Processamento. \n\nCuidado: A temperatura aqui é crítica (OVERHEAT). O ambiente está instável e visualmente agressivo.",
+            
+            8: "Detecto assinaturas de código antigo nas paredes. \n\nParece que outros protocolos tentaram limpar este setor antes de nós... e falharam. Não cometa o mesmo erro.",
+            
+            10: "ALERTA DE CHEFE: O Incinerador. \n\nEsta entidade é responsável pelo superaquecimento. Se não o pararmos agora, o hardware vai derreter.",
+            
+            11: "Entrando no VOID (Vazio). \n\nNão há mais dados aqui. Apenas estrelas mortas e arquivos deletados. O Núcleo do Sistema deve estar escondido nessa escuridão. Fique alerta."
+        };
+
         const RELIC_DEX = [
-            { id: 'vamp', name: 'Dreno', icon: '🩸', desc: 'Cura 10% do dano causado.' },
-            { id: 'thorns', name: 'Espinhos', icon: '🌵', desc: 'Reflete 20% do dano recebido.' },
-            { id: 'double', name: 'Loop', icon: '➰', desc: '25% chance Magia Dupla.' },
+            { id: 'vamp', name: 'Dreno de Dados', icon: '🩸', desc: 'Cura 10% do dano causado.' },
+            { id: 'thorns', name: 'Malware Ativo', icon: '🌵', desc: 'Reflete 20% do dano recebido.' },
+            { id: 'double', name: 'Loop Infinito', icon: '➰', desc: '25% chance Magia Dupla.' },
             { id: 'crit', name: 'Overclock', icon: '⚡', desc: 'Crítico causa 3x dano.' },
-            { id: 'exec', name: 'Delete', icon: '💀', desc: 'Mata se HP < 20%.' },
-            { id: 'rich', name: 'Miner', icon: '💎', desc: '+50% Essência.' }
+            { id: 'exec', name: 'Comando Delete', icon: '💀', desc: 'Mata inimigo se HP < 20%.' },
+            { id: 'rich', name: 'Minerador', icon: '💎', desc: '+50% Essência.' }
         ];
+
         const CLASS_STATS = {
             samurai: { name: "Lâmina", color: "#ff0055", hpMult: 0.8, mpMult: 0.8, atkBonus: 5, critBonus: 0.15 },
             mage:    { name: "Código",    color: "#00ffff", hpMult: 0.7, mpMult: 1.5, atkBonus: 0, magicMult: 1.3 },
             tank:    { name: "Firewall",    color: "#00ff00", hpMult: 1.4, mpMult: 0.5, atkBonus: -2, defBonus: 2 }
         };
-        const LORE = {
-            1: "Grid Inicial. Elimine dados hostis.",
-            5: "Boss detectado. Artefato próximo.",
-            6: "Setor Overheat. Cuidado com o calor.",
-            10: "Incinerador. Ameaça Extrema.",
-            11: "Entrando no Vazio."
-        };
+
         const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, crit: 0 } };
-        let saveData = JSON.parse(localStorage.getItem('neonRpgV10')) || DEFAULT_SAVE;
-        function saveGame() { localStorage.setItem('neonRpgV10', JSON.stringify(saveData)); }
+        let saveData = JSON.parse(localStorage.getItem('neonRpgV11')) || DEFAULT_SAVE;
+        function saveGame() { localStorage.setItem('neonRpgV11', JSON.stringify(saveData)); }
 
         // --- AUDIO ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -166,42 +212,37 @@
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
         
-        // DIALOGUE STATE
         let dialogueState = { text: '', index: 0, isTyping: false, timer: null };
-
         let state = { turn: 'player', stage: 1, hp: 0, maxHp: 0, mp: 0, maxMp: 0, enemyHp: 0, enemyMaxHp: 0, isBoss: false, particles: [], shake: 0, runEssence: 0, currentClass: 'samurai', bgProps: [], relics: [] };
 
         function initBackground() { state.bgProps = []; for(let i=0; i<50; i++) state.bgProps.push({ x: Math.random()*width, y: Math.random()*height, speed: Math.random()*2+1, val: Math.random() }); }
+        
         function chooseClass(className) { initAudio(); if(gameLoopId) cancelAnimationFrame(gameLoopId); state.currentClass = className; document.getElementById('start-overlay').style.display = 'none'; document.getElementById('game-ui').style.display = 'flex'; initStats(); initBackground(); drawGame(Date.now()); }
+        
         function initStats() {
             const cls = CLASS_STATS[state.currentClass]; const baseHp = 100 + (saveData.skills.hp * 20); state.maxHp = Math.floor(baseHp * cls.hpMult); state.hp = state.maxHp; const baseMp = 50 + (saveData.skills.mp * 15); state.maxMp = Math.floor(baseMp * cls.mpMult); state.mp = state.maxMp;
             state.stage = 1; state.runEssence = 0; state.relics = []; state.turn = 'player';
             toggleButtons(true); updateHUD(); checkStory();
         }
+        
         function toggleButtons(enable) {
             if(unlockTimer) clearTimeout(unlockTimer); if(!enable) unlockTimer = setTimeout(() => toggleButtons(true), 2500);
             ['btn-atk', 'btn-mag', 'btn-pot'].forEach(id => document.getElementById(id).disabled = !enable);
             const magBtn = document.getElementById('btn-mag'); if(state.mp < 15) magBtn.classList.add('low-mana'); else magBtn.classList.remove('low-mana');
         }
 
-        // --- NEW DIALOGUE SYSTEM ---
+        // --- TYPEWRITER DIALOGUE ---
         function checkStory() {
-            if (LORE[state.stage]) {
-                startDialogue(LORE[state.stage]);
-            } else { startBattle(); }
+            if (LORE[state.stage]) { startDialogue(LORE[state.stage]); } else { startBattle(); }
         }
 
         function startDialogue(text) {
             document.getElementById('dialogue-overlay').style.display = 'flex';
             document.getElementById('controls-area').style.opacity = '0';
             state.turn = 'dialogue';
-            
-            dialogueState.text = text;
-            dialogueState.index = 0;
-            dialogueState.isTyping = true;
+            dialogueState.text = text; dialogueState.index = 0; dialogueState.isTyping = true;
             document.getElementById('story-text').innerText = '';
-            document.getElementById('dialogue-btn').style.opacity = '0.5'; // Botão meio apagado enquanto digita
-            
+            document.getElementById('dialogue-btn').style.opacity = '0.5';
             if(dialogueState.timer) clearTimeout(dialogueState.timer);
             typeWriter();
         }
@@ -209,29 +250,20 @@
         function typeWriter() {
             if (dialogueState.index < dialogueState.text.length) {
                 document.getElementById('story-text').innerText += dialogueState.text.charAt(dialogueState.index);
-                dialogueState.index++;
-                SFX.type(); // Som de digitação
-                dialogueState.timer = setTimeout(typeWriter, 40); // Velocidade da digitação
-            } else {
-                finishTyping();
-            }
+                dialogueState.index++; SFX.type();
+                dialogueState.timer = setTimeout(typeWriter, 35);
+            } else { finishTyping(); }
         }
 
         function finishTyping() {
             if(dialogueState.timer) clearTimeout(dialogueState.timer);
             document.getElementById('story-text').innerText = dialogueState.text;
             dialogueState.isTyping = false;
-            document.getElementById('dialogue-btn').style.opacity = '1'; // Botão acende
+            document.getElementById('dialogue-btn').style.opacity = '1';
         }
 
         function handleDialogueClick() {
-            if (dialogueState.isTyping) {
-                // Se clicar enquanto digita, pula para o final
-                finishTyping();
-            } else {
-                // Se já terminou, fecha o diálogo
-                closeDialogue();
-            }
+            if (dialogueState.isTyping) { finishTyping(); } else { closeDialogue(); }
         }
 
         function closeDialogue() {
@@ -244,7 +276,7 @@
             state.isBoss = (state.stage % 5 === 0); state.enemyMaxHp = Math.floor(100 + (state.stage * 25)); if(state.isBoss) state.enemyMaxHp *= 2.5; state.enemyHp = state.enemyMaxHp; state.turn = 'player'; toggleButtons(true);
         }
 
-        // --- ACTIONS & COMBAT ---
+        // --- ACTIONS ---
         document.getElementById('btn-atk').addEventListener('click', () => performAction('atk'));
         document.getElementById('btn-mag').addEventListener('click', () => performAction('mag'));
         document.getElementById('btn-pot').addEventListener('click', () => performAction('pot'));
@@ -253,6 +285,7 @@
             if(state.turn !== 'player') return;
             if(type === 'mag' && state.mp < 15) { showToast("SEM MANA", "#44ccff"); return; }
             state.turn = 'anim'; toggleButtons(false); const cls = CLASS_STATS[state.currentClass];
+            
             if(type === 'atk') {
                 SFX.hit(); spawnParticles(width*0.75, height*0.6, '#ffaa00', 30); screenShake(15);
                 let dmg = (15 + (saveData.skills.atk * 5)) + cls.atkBonus + Math.floor(Math.random()*5); let critMult = state.relics.includes('crit') ? 3 : 2;
@@ -268,6 +301,7 @@
                 SFX.heal(); state.hp = Math.min(state.maxHp, state.hp + (40 + (saveData.skills.hp * 5))); state.mp = Math.min(state.maxMp, state.mp + 15); spawnParticles(width*0.25, height*0.6, '#00ff00', 30); updateHUD(); showToast("CURA", "#00ff00"); setTimeout(enemyTurn, 800);
             }
         }
+
         function dealDamage(amount) {
             state.enemyHp -= amount; if(state.relics.includes('exec') && state.enemyHp < state.enemyMaxHp * 0.2) state.enemyHp = 0;
             if(state.enemyHp <= 0) {
@@ -276,13 +310,16 @@
                 if(state.isBoss) setTimeout(openRelicSelection, 1000); else setTimeout(nextStage, 1000);
             } else { setTimeout(enemyTurn, 800); }
         }
+
         function enemyTurn() {
             if(state.enemyHp <= 0) return; if(state.relics.includes('dodge') && Math.random() < 0.15) { showToast("GLITCH", "#aaa"); state.turn = 'player'; toggleButtons(true); return; }
             const cls = CLASS_STATS[state.currentClass]; let dmg = (8 + Math.floor(state.stage * 1.8)) * (state.isBoss ? 1.5 : 1); if(cls.defBonus) dmg = Math.max(1, dmg - cls.defBonus); state.hp -= dmg;
             if(state.relics.includes('thorns')) { let reflect = Math.ceil(dmg*0.2); state.enemyHp -= reflect; showToast(`Reflete ${reflect}`, "#ff4444"); if(state.enemyHp <= 0) { dealDamage(0); return; } }
             spawnParticles(width*0.25, height*0.6, '#ff0000', 20); screenShake(20); updateHUD(); if(state.hp <= 0) gameOver(); else { state.turn = 'player'; toggleButtons(true); }
         }
+
         function nextStage() { state.stage++; state.mp = Math.min(state.maxMp, state.mp + Math.floor(state.maxMp * 0.25)); updateHUD(); checkStory(); }
+
         function openRelicSelection() {
             const options = []; let pool = [...RELIC_DEX]; while(options.length < 3 && pool.length > 0) { let idx = Math.floor(Math.random() * pool.length); let r = pool.splice(idx, 1)[0]; if(!state.relics.includes(r.id)) options.push(r); }
             if(options.length === 0) { nextStage(); return; }
@@ -290,6 +327,7 @@
             options.forEach(r => { const div = document.createElement('div'); div.className = 'relic-card'; div.innerHTML = `<div class="relic-icon">${r.icon}</div><div class="relic-info"><h3>${r.name}</h3><p>${r.desc}</p></div>`; div.onclick = () => { state.relics.push(r.id); SFX.relic(); document.getElementById('relic-overlay').style.display='none'; document.getElementById('game-ui').style.display='flex'; nextStage(); }; container.appendChild(div); });
             document.getElementById('game-ui').style.display = 'none'; document.getElementById('relic-overlay').style.display = 'flex';
         }
+
         function gameOver() { saveData.essence += state.runEssence; saveGame(); document.getElementById('game-ui').style.display = 'none'; document.getElementById('shop-overlay').style.display = 'flex'; updateShopUI(); }
         function updateShopUI() { document.getElementById('shop-essence-val').innerText = saveData.essence; ['atk', 'hp', 'mp', 'crit'].forEach(s => { const cost = 10 * (saveData.skills[s] + 1); document.getElementById(`lvl-${s}`).innerText = saveData.skills[s]; const btn = document.getElementById(`buy-${s}`); btn.innerText = `Custo: ${cost}`; if(saveData.essence >= cost) { btn.classList.add('can-buy'); btn.disabled = false; } else { btn.classList.remove('can-buy'); btn.disabled = true; } }); }
         function buyUpgrade(type) { const cost = 10 * (saveData.skills[type] + 1); if(saveData.essence >= cost) { saveData.essence -= cost; saveData.skills[type]++; saveGame(); updateShopUI(); } }
