@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon RPG: Final V8</title>
+    <title>Neon RPG: V9 Stable</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
@@ -29,12 +29,14 @@
         
         /* CONTROLS */
         .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; pointer-events: auto; margin-bottom: 10px; transition: opacity 0.3s; }
-        .btn { background: rgba(20, 20, 20, 0.9); border: 2px solid #333; color: white; padding: 15px 0; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; backdrop-filter: blur(5px); font-family: 'Orbitron'; }
+        .btn { background: rgba(20, 20, 20, 0.9); border: 2px solid #333; color: white; padding: 15px 0; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; backdrop-filter: blur(5px); font-family: 'Orbitron'; transition: all 0.2s; }
         .btn:active { transform: scale(0.95); }
         .btn-atk { border-color: #ff4444; } 
         .btn-mag { border-color: #44ccff; }
         .btn-pot { border-color: #44ff44; }
-        .btn:disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+        
+        /* CLASSE VISUAL PARA DESABILITADO */
+        .btn:disabled, .btn.low-mana { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; border-color: #555; }
 
         /* RELIC SELECTION */
         #relic-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; }
@@ -46,8 +48,9 @@
         .relic-info h3 { font-size: 16px; color: #fff; margin-bottom: 5px; }
         .relic-info p { font-size: 12px; color: #aaa; font-family: 'Roboto Mono'; }
 
-        /* SHOP & OTHERS */
+        /* SHOP */
         #shop-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 30; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; pointer-events: auto; }
+        .shop-header { text-align: center; margin-bottom: 20px; }
         .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; margin-bottom: 20px; }
         .skill-card { background: #1a1a1a; border: 1px solid #444; padding: 15px; border-radius: 10px; text-align: center; }
         .buy-btn { width: 100%; margin-top: 10px; padding: 8px; background: #333; border: 1px solid #555; color: white; border-radius: 5px; cursor: pointer; font-family: 'Orbitron'; }
@@ -74,8 +77,8 @@
     <canvas id="gameCanvas"></canvas>
 
     <div id="start-overlay">
-        <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 10px;">NEON RPG V8</h1>
-        <p style="color:#888; font-size:12px;">Sistema Estável. Sem Travamentos.</p>
+        <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 10px;">NEON RPG V9</h1>
+        <p style="color:#888; font-size:12px;">Correção de Mana & Loop.</p>
         
         <div class="class-container">
             <button class="class-btn" style="border-color:#ff0055" onclick="chooseClass('samurai')">
@@ -110,11 +113,8 @@
         </div>
     </div>
 
-    <div id="relic-overlay">
-        <div class="relic-title">ARTEFATO ENCONTRADO</div>
-        <div class="relic-container" id="relic-list"></div>
-    </div>
-
+    <div id="relic-overlay"><div class="relic-title">ARTEFATO ENCONTRADO</div><div class="relic-container" id="relic-list"></div></div>
+    
     <div id="dialogue-overlay">
         <div class="dialogue-box">
             <div class="char-name">SYSTEM LOG</div>
@@ -124,22 +124,18 @@
     </div>
 
     <div id="shop-overlay">
-        <div class="shop-header">
-            <h1 style="color:#ff4444">FALHA CRÍTICA</h1>
-            <p>Reinicializando sistema...</p>
-            <div style="font-size:24px; color:#b026ff; margin-top:10px;">🟣 <span id="shop-essence-val">0</span></div>
-        </div>
+        <div class="shop-header"><h1 style="color:#ff4444">FALHA CRÍTICA</h1><p>Sistema Reiniciado.</p><div style="font-size:24px; color:#b026ff; margin-top:10px;">🟣 <span id="shop-essence-val">0</span></div></div>
         <div class="skill-grid">
             <div class="skill-card"><span>⚔️</span><div>FORÇA</div><div style="color:#aaa">v.<span id="lvl-atk">0</span></div><button class="buy-btn" id="buy-atk" onclick="buyUpgrade('atk')">UP</button></div>
             <div class="skill-card"><span>❤️</span><div>VIDA</div><div style="color:#aaa">v.<span id="lvl-hp">0</span></div><button class="buy-btn" id="buy-hp" onclick="buyUpgrade('hp')">UP</button></div>
             <div class="skill-card"><span>✨</span><div>MANA</div><div style="color:#aaa">v.<span id="lvl-mp">0</span></div><button class="buy-btn" id="buy-mp" onclick="buyUpgrade('mp')">UP</button></div>
             <div class="skill-card"><span>🍀</span><div>SORTE</div><div style="color:#aaa">v.<span id="lvl-crit">0</span></div><button class="buy-btn" id="buy-crit" onclick="buyUpgrade('crit')">UP</button></div>
         </div>
-        <button id="restart-btn" onclick="restartToMenu()">VOLTAR AO MENU</button>
+        <button id="restart-btn" onclick="restartToMenu()">MENU</button>
     </div>
 
     <script>
-        // --- CONFIG ---
+        // --- DATA ---
         const RELIC_DEX = [
             { id: 'vamp', name: 'Dreno', icon: '🩸', desc: 'Cura 10% do dano causado.' },
             { id: 'thorns', name: 'Espinhos', icon: '🌵', desc: 'Reflete 20% do dano recebido.' },
@@ -156,16 +152,16 @@
         };
 
         const LORE = {
-            1: "Grid Inicial. Elimine os dados hostis.",
+            1: "Grid Inicial. Elimine dados hostis.",
             5: "Boss detectado. Artefato próximo.",
             6: "Setor Overheat. Cuidado com o calor.",
-            10: "Incinerador. Nível de ameaça: Extremo.",
+            10: "Incinerador. Ameaça Extrema.",
             11: "Entrando no Vazio."
         };
 
         const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, crit: 0 } };
-        let saveData = JSON.parse(localStorage.getItem('neonRpgV8')) || DEFAULT_SAVE;
-        function saveGame() { localStorage.setItem('neonRpgV8', JSON.stringify(saveData)); }
+        let saveData = JSON.parse(localStorage.getItem('neonRpgV9')) || DEFAULT_SAVE;
+        function saveGame() { localStorage.setItem('neonRpgV9', JSON.stringify(saveData)); }
 
         // --- AUDIO ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -182,7 +178,7 @@
         }
         const SFX = { hit: ()=>playTone(150,'sawtooth',0.1), magic: ()=>playTone(600,'sine',0.2), heal: ()=>playTone(400,'sine',0.2), coin: ()=>playTone(1000,'square',0.1,0.05), relic: ()=>playTone(200,'triangle',0.5,0.2) };
 
-        // --- GAME STATE ---
+        // --- ENGINE ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let width, height;
@@ -201,15 +197,11 @@
 
         function chooseClass(className) {
             initAudio();
-            if(gameLoopId) cancelAnimationFrame(gameLoopId); // Mata loop antigo
-            
+            if(gameLoopId) cancelAnimationFrame(gameLoopId);
             state.currentClass = className;
             document.getElementById('start-overlay').style.display = 'none';
             document.getElementById('game-ui').style.display = 'flex';
-            
-            initStats();
-            initBackground();
-            drawGame(Date.now());
+            initStats(); initBackground(); drawGame(Date.now());
         }
 
         function initStats() {
@@ -219,22 +211,22 @@
             const baseMp = 50 + (saveData.skills.mp * 15);
             state.maxMp = Math.floor(baseMp * cls.mpMult); state.mp = state.maxMp;
             
-            state.stage = 1; state.runEssence = 0;
-            state.relics = [];
-            state.turn = 'player';
-            toggleButtons(true);
-            updateHUD();
-            checkStory();
+            state.stage = 1; state.runEssence = 0; state.relics = []; state.turn = 'player';
+            toggleButtons(true); updateHUD(); checkStory();
         }
 
         function toggleButtons(enable) {
-            // FAILSAFE: Se travar, destrava sozinho em 2.5s
             if(unlockTimer) clearTimeout(unlockTimer);
-            if(!enable) unlockTimer = setTimeout(() => toggleButtons(true), 2500);
-
-            document.getElementById('btn-atk').disabled = !enable;
-            document.getElementById('btn-mag').disabled = !enable;
-            document.getElementById('btn-pot').disabled = !enable;
+            if(!enable) unlockTimer = setTimeout(() => toggleButtons(true), 2500); // Failsafe
+            
+            const btns = ['btn-atk', 'btn-mag', 'btn-pot'];
+            btns.forEach(id => document.getElementById(id).disabled = !enable);
+            
+            // Mana Check Visual
+            if(enable) {
+                const magBtn = document.getElementById('btn-mag');
+                if(state.mp < 15) { magBtn.classList.add('low-mana'); } else { magBtn.classList.remove('low-mana'); }
+            }
         }
 
         function checkStory() {
@@ -242,6 +234,7 @@
                 document.getElementById('story-text').innerText = LORE[state.stage];
                 document.getElementById('dialogue-overlay').style.display = 'flex';
                 document.getElementById('controls-area').style.opacity = '0';
+                state.turn = 'dialogue';
             } else { startBattle(); }
         }
 
@@ -267,9 +260,13 @@
 
         function performAction(type) {
             if(state.turn !== 'player') return;
-            state.turn = 'anim'; toggleButtons(false);
 
+            // PRE-CHECK PARA NÃO TRAVAR
+            if(type === 'mag' && state.mp < 15) { showToast("SEM MANA", "#44ccff"); return; }
+
+            state.turn = 'anim'; toggleButtons(false);
             const cls = CLASS_STATS[state.currentClass];
+
             if(type === 'atk') {
                 SFX.hit(); spawnParticles(width*0.75, height*0.6, '#ffaa00', 30); screenShake(15);
                 let dmg = (15 + (saveData.skills.atk * 5)) + cls.atkBonus + Math.floor(Math.random()*5);
@@ -279,7 +276,6 @@
                 dealDamage(dmg);
             }
             else if(type === 'mag') {
-                if(state.mp < 15) { toggleButtons(true); return; }
                 state.mp -= 15; updateHUD(); SFX.magic(); spawnParticles(width*0.75, height*0.6, cls.color, 50); screenShake(10);
                 let dmg = Math.floor((40 + (saveData.skills.atk * 8)) * (cls.magicMult || 1));
                 if(state.relics.includes('double') && Math.random() < 0.25) setTimeout(() => { showToast("LOOP!", "#00ffff"); dealDamage(dmg); }, 300);
@@ -311,29 +307,21 @@
         }
 
         function enemyTurn() {
-            if(state.enemyHp <= 0) return; // Previne ataque zumbi
-
-            if(state.relics.includes('dodge') && Math.random() < 0.15) {
-                showToast("GLITCH", "#aaa"); state.turn = 'player'; toggleButtons(true); return;
-            }
+            if(state.enemyHp <= 0) return;
+            if(state.relics.includes('dodge') && Math.random() < 0.15) { showToast("GLITCH", "#aaa"); state.turn = 'player'; toggleButtons(true); return; }
 
             const cls = CLASS_STATS[state.currentClass];
             let dmg = (8 + Math.floor(state.stage * 1.8)) * (state.isBoss ? 1.5 : 1);
             if(cls.defBonus) dmg = Math.max(1, dmg - cls.defBonus);
             state.hp -= dmg;
             
-            spawnParticles(width*0.25, height*0.6, '#ff0000', 20); screenShake(20); updateHUD();
-
-            // THORNS LOGIC (FIXED)
             if(state.relics.includes('thorns')) {
-                let reflect = Math.ceil(dmg*0.2);
-                state.enemyHp -= reflect;
-                showToast(`Reflete ${reflect}`, "#ff4444");
-                if(state.enemyHp <= 0) { dealDamage(0); return; } // Trigger death immediately
+                let reflect = Math.ceil(dmg*0.2); state.enemyHp -= reflect; showToast(`Reflete ${reflect}`, "#ff4444");
+                if(state.enemyHp <= 0) { dealDamage(0); return; }
             }
 
-            if(state.hp <= 0) gameOver(); 
-            else { state.turn = 'player'; toggleButtons(true); }
+            spawnParticles(width*0.25, height*0.6, '#ff0000', 20); screenShake(20); updateHUD();
+            if(state.hp <= 0) gameOver(); else { state.turn = 'player'; toggleButtons(true); }
         }
 
         function nextStage() { 
@@ -361,19 +349,14 @@
                 div.onclick = () => { state.relics.push(r.id); SFX.relic(); document.getElementById('relic-overlay').style.display='none'; document.getElementById('game-ui').style.display='flex'; nextStage(); };
                 container.appendChild(div);
             });
-
-            document.getElementById('game-ui').style.display = 'none';
-            document.getElementById('relic-overlay').style.display = 'flex';
+            document.getElementById('game-ui').style.display = 'none'; document.getElementById('relic-overlay').style.display = 'flex';
         }
 
         // --- ENDGAME ---
         function gameOver() {
             saveData.essence += state.runEssence; saveGame();
-            document.getElementById('game-ui').style.display = 'none';
-            document.getElementById('shop-overlay').style.display = 'flex';
-            updateShopUI();
+            document.getElementById('game-ui').style.display = 'none'; document.getElementById('shop-overlay').style.display = 'flex'; updateShopUI();
         }
-
         function updateShopUI() {
             document.getElementById('shop-essence-val').innerText = saveData.essence;
             ['atk', 'hp', 'mp', 'crit'].forEach(s => {
@@ -389,16 +372,11 @@
             if(saveData.essence >= cost) { saveData.essence -= cost; saveData.skills[type]++; saveGame(); updateShopUI(); }
         }
         function restartToMenu() {
-            document.getElementById('shop-overlay').style.display = 'none';
-            document.getElementById('start-overlay').style.display = 'flex';
+            document.getElementById('shop-overlay').style.display = 'none'; document.getElementById('start-overlay').style.display = 'flex';
         }
 
-        // --- DRAWING ---
-        class Particle {
-            constructor(x, y, color, speed, size) { this.x = x; this.y = y; this.color = color; this.size = size; this.vx = (Math.random()-0.5)*speed; this.vy = (Math.random()-0.5)*speed; this.life = 1.0; }
-            update() { this.x+=this.vx; this.y+=this.vy; this.life-=0.03; }
-            draw(ctx) { ctx.globalAlpha = Math.max(0,this.life); ctx.fillStyle=this.color; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1.0; }
-        }
+        // --- DRAW ---
+        class Particle { constructor(x, y, color, speed, size) { this.x = x; this.y = y; this.color = color; this.size = size; this.vx = (Math.random()-0.5)*speed; this.vy = (Math.random()-0.5)*speed; this.life = 1.0; } update() { this.x+=this.vx; this.y+=this.vy; this.life-=0.03; } draw(ctx) { ctx.globalAlpha = Math.max(0,this.life); ctx.fillStyle=this.color; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1.0; } }
         function spawnParticles(x, y, color, count) { for(let i=0; i<count; i++) state.particles.push(new Particle(x, y, color, 15, Math.random()*4+1)); }
         function screenShake(amount) { state.shake = amount; }
         function showToast(msg, color='#fff') { const el = document.getElementById('toast-msg'); el.innerText = msg; el.style.color = color; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 1000); }
@@ -408,6 +386,10 @@
             document.getElementById('stage-val').innerText = state.stage;
             document.getElementById('essence-val').innerText = state.runEssence;
             document.getElementById('relic-count').innerText = state.relics.length;
+            
+            // Visual Mana Check
+            const magBtn = document.getElementById('btn-mag');
+            if(state.mp < 15) magBtn.classList.add('low-mana'); else magBtn.classList.remove('low-mana');
         }
 
         function drawGame(time) {
