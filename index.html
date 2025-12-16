@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RPG Neon Kelson</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #050505; overflow: hidden; font-family: 'Orbitron', sans-serif; height: 100vh; width: 100vw; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; }
+        .hud-top { width: 100%; max-width: 400px; margin: 0 auto; pointer-events: auto; }
+        .bar-container { margin-bottom: 8px; }
+        .bar-label { color: #fff; font-size: 12px; margin-bottom: 2px; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        .bar-bg { width: 100%; height: 10px; background: rgba(30, 30, 30, 0.8); border: 1px solid #444; border-radius: 5px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .bar-fill { height: 100%; width: 100%; transition: width 0.3s ease-out; }
+        .hp { background: linear-gradient(90deg, #ff4444, #ff0000); box-shadow: 0 0 10px #ff0000; }
+        .mp { background: linear-gradient(90deg, #44ccff, #0088ff); box-shadow: 0 0 10px #0088ff; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; pointer-events: auto; margin-bottom: 20px; }
+        .btn { background: rgba(20, 20, 20, 0.9); border: 2px solid #333; color: white; padding: 20px 0; border-radius: 12px; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 14px; cursor: pointer; transition: all 0.1s; backdrop-filter: blur(5px); text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+        .btn:active { transform: scale(0.95); }
+        .btn-atk { border-color: #ff4444; box-shadow: 0 0 15px rgba(255, 68, 68, 0.2); }
+        .btn-mag { border-color: #44ccff; box-shadow: 0 0 15px rgba(68, 204, 255, 0.2); }
+        .btn-pot { border-color: #44ff44; box-shadow: 0 0 15px rgba(68, 255, 68, 0.2); }
+        .toast { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold; color: #fff; text-shadow: 0 0 10px #fff; opacity: 0; transition: opacity 0.5s, transform 0.5s; }
+        .toast.show { opacity: 1; transform: translate(-50%, -80%); }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div class="ui-layer">
+        <div class="hud-top">
+            <div class="bar-container"><div class="bar-label">HP <span id="hp-val">100</span></div><div class="bar-bg"><div id="hp-bar" class="bar-fill hp"></div></div></div>
+            <div class="bar-container"><div class="bar-label">MP <span id="mp-val">50</span></div><div class="bar-bg"><div id="mp-bar" class="bar-fill mp"></div></div></div>
+        </div>
+        <div id="toast-msg" class="toast hidden">Crítico!</div>
+        <div class="controls">
+            <button class="btn btn-atk" id="btn-atk">⚔️ ATACAR</button>
+            <button class="btn btn-mag" id="btn-mag">✨ MAGIA</button>
+            <button class="btn btn-pot" id="btn-pot">🧪 CURAR</button>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+        const state = { turn: 'player', hp: 100, maxHp: 100, mp: 50, maxMp: 50, enemyHp: 100, enemyMaxHp: 100, particles: [], shake: 0 };
+
+        class Particle {
+            constructor(x, y, color, speed, size) {
+                this.x = x; this.y = y; this.color = color; this.size = size;
+                this.vx = (Math.random() - 0.5) * speed; this.vy = (Math.random() - 0.5) * speed; this.life = 1.0;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.life -= 0.02; }
+            draw(ctx) { ctx.globalAlpha = Math.max(0, this.life); ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1.0; }
+        }
+
+        function spawnParticles(x, y, color, count) { for(let i=0; i<count; i++) state.particles.push(new Particle(x, y, color, 10, Math.random() * 3 + 1)); }
+        function screenShake(amount) { state.shake = amount; }
+
+        function drawPlayer(x, y, time) {
+            ctx.shadowBlur = 20; ctx.shadowColor = '#00ffff'; ctx.fillStyle = '#00ffff';
+            const floatY = Math.sin(time / 500) * 10;
+            ctx.beginPath(); ctx.arc(x, y + floatY, 30, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 0; ctx.fillStyle = '#000';
+            ctx.fillRect(x - 10, y + floatY - 5, 8, 8); ctx.fillRect(x + 2, y + floatY - 5, 8, 8);
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y + floatY, 45 + Math.sin(time / 200)*5, 0, Math.PI * 2); ctx.stroke();
+        }
+
+        function drawEnemy(x, y, time) {
+            const hpPct = state.enemyHp / state.enemyMaxHp;
+            const color = hpPct > 0.5 ? '#ff4444' : '#550000';
+            ctx.shadowBlur = 30; ctx.shadowColor = color; ctx.fillStyle = color;
+            const scale = 1 + Math.sin(time / 300) * 0.05; const size = 80 * scale;
+            ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(time / 1000) * 0.1);
+            ctx.fillRect(-size/2, -size/2, size, size);
+            ctx.shadowBlur = 5; ctx.shadowColor = '#ffff00'; ctx.fillStyle = '#ffff00';
+            ctx.beginPath(); ctx.moveTo(-20, -10); ctx.lineTo(-10, 0); ctx.lineTo(-30, 0); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(20, -10); ctx.lineTo(30, 0); ctx.lineTo(10, 0); ctx.fill();
+            ctx.restore();
+            ctx.shadowBlur = 0; ctx.fillStyle = '#333'; ctx.fillRect(x - 50, y - 80, 100, 10);
+            ctx.fillStyle = '#ff0000'; ctx.fillRect(x - 50, y - 80, 100 * hpPct, 10);
+        }
+
+        function drawLighting() {
+            const gradient = ctx.createRadialGradient(width/2, height/2, 100, width/2, height/2, width);
+            gradient.addColorStop(0, 'rgba(0,0,0,0)'); gradient.addColorStop(1, 'rgba(0,0,0,0.8)');
+            ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            for(let i=0; i<20; i++) {
+                const px = (Date.now() / 20 + i * 100) % width;
+                const py = (Date.now() / 50 + i * 200) % height;
+                ctx.fillRect(px, py, 2, 2);
+            }
+        }
+
+        function loop() {
+            ctx.fillStyle = '#111'; ctx.fillRect(0, 0, width, height);
+            ctx.save();
+            if (state.shake > 0) {
+                const dx = (Math.random() - 0.5) * state.shake; const dy = (Math.random() - 0.5) * state.shake;
+                ctx.translate(dx, dy); state.shake *= 0.9; if(state.shake < 0.5) state.shake = 0;
+            }
+            const time = Date.now();
+            drawPlayer(width * 0.25, height * 0.6, time);
+            if (state.enemyHp > 0) drawEnemy(width * 0.75, height * 0.6, time);
+            state.particles.forEach((p, index) => { p.update(); p.draw(ctx); if (p.life <= 0) state.particles.splice(index, 1); });
+            ctx.restore(); drawLighting();
+            requestAnimationFrame(loop);
+        }
+
+        function showToast(msg) { const el = document.getElementById('toast-msg'); el.innerText = msg; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 1500); }
+        function updateHUD() {
+            document.getElementById('hp-bar').style.width = (state.hp / state.maxHp * 100) + '%';
+            document.getElementById('mp-bar').style.width = (state.mp / state.maxMp * 100) + '%';
+            document.getElementById('hp-val').innerText = Math.max(0, state.hp);
+            document.getElementById('mp-val').innerText = state.mp;
+        }
+
+        document.getElementById('btn-atk').addEventListener('click', () => {
+            if (state.turn !== 'player') return;
+            state.turn = 'anim'; spawnParticles(width * 0.75, height * 0.6, '#ffaa00', 30); screenShake(20);
+            const dmg = 15 + Math.floor(Math.random() * 5); state.enemyHp -= dmg; showToast(`-${dmg} Dano!`);
+            if(state.enemyHp <= 0) {
+                state.enemyHp = 0; spawnParticles(width * 0.75, height * 0.6, '#ff0000', 100);
+                setTimeout(() => { alert("VITÓRIA! Próximo inimigo..."); state.enemyHp = 100; state.turn = 'player'; }, 1000);
+            } else { setTimeout(enemyTurn, 1000); }
+        });
+
+        document.getElementById('btn-mag').addEventListener('click', () => {
+            if (state.turn !== 'player' || state.mp < 10) return;
+            state.mp -= 10; updateHUD(); spawnParticles(width * 0.75, height * 0.6, '#00ffff', 50); screenShake(10);
+            const dmg = 30; state.enemyHp -= dmg; showToast(`MAGIA! -${dmg}`); state.turn = 'anim';
+            if(state.enemyHp <= 0) { state.enemyHp=0; setTimeout(()=>location.reload(),1000); } else { setTimeout(enemyTurn, 1000); }
+        });
+
+        document.getElementById('btn-pot').addEventListener('click', () => {
+            if (state.turn !== 'player') return;
+            state.hp = Math.min(state.maxHp, state.hp + 40); spawnParticles(width * 0.25, height * 0.6, '#00ff00', 20); updateHUD(); showToast("+40 HP"); state.turn = 'anim'; setTimeout(enemyTurn, 1000);
+        });
+
+        function enemyTurn() {
+            state.turn = 'enemy'; screenShake(30); spawnParticles(width * 0.25, height * 0.6, '#ff0000', 20);
+            const dmg = 10 + Math.floor(Math.random() * 10); state.hp -= dmg; updateHUD();
+            if (state.hp <= 0) { setTimeout(() => { alert("GAME OVER"); location.reload(); }, 100); } else { state.turn = 'player'; }
+        }
+        loop();
+    </script>
+</body>
+</html>
