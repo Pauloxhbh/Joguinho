@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon RPG: System Collapse</title>
+    <title>Neon RPG: Final Fix</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
@@ -45,6 +45,7 @@
 
         /* SHOP */
         #shop-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 30; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; pointer-events: auto; }
+        .shop-header { text-align: center; margin-bottom: 20px; }
         .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; margin-bottom: 20px; }
         .skill-card { background: #1a1a1a; border: 1px solid #444; padding: 15px; border-radius: 10px; text-align: center; }
         .buy-btn { width: 100%; margin-top: 10px; padding: 8px; background: #333; border: 1px solid #555; color: white; border-radius: 5px; cursor: pointer; font-family: 'Orbitron'; }
@@ -161,27 +162,21 @@
             tank:    { name: "Firewall",    color: "#00ff00", hpMult: 1.4, mpMult: 0.5, atkBonus: -2, defBonus: 2 }
         };
 
-        // --- LORE (A NOVA HISTÓRIA) ---
+        // --- LORE ---
         const LORE = {
             1: "Inicializando... Conexão estável. \nBem-vindo ao Setor Periférico (The Grid). Detecto fragmentos de dados hostis à frente. Eles são fracos, mas numerosos. Inicie o protocolo de limpeza.",
-            
             3: "Atenção: A densidade da corrupção está aumentando. Esses programas não estão apenas com defeito; eles estão sendo reescritos por algo maior.",
-            
             5: "ALERTA CRÍTICO: Guardião do Setor detectado. \nEste Firewall antigamente protegia o sistema, agora ele bloqueia nosso acesso. Você precisa destruí-lo para avançar.",
-            
             6: "Acesso concedido ao Setor de Processamento. \nCuidado: A temperatura aqui é crítica (OVERHEAT). O ambiente está instável e visualmente agressivo.",
-            
             8: "Detecto assinaturas de código antigo nas paredes. Parece que outros protocolos tentaram limpar este setor antes de nós... e falharam.",
-            
             10: "ALERTA DE CHEFE: O Incinerador. \nEsta entidade é responsável pelo superaquecimento. Se não o pararmos agora, o hardware vai derreter.",
-            
             11: "Entrando no VOID (Vazio). \nNão há mais dados aqui. Apenas estrelas mortas e arquivos deletados. O Núcleo do Sistema deve estar escondido nessa escuridão. Fique alerta."
         };
 
         // --- SAVE SYSTEM ---
         const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, crit: 0 } };
-        let saveData = JSON.parse(localStorage.getItem('neonRpgV4')) || DEFAULT_SAVE;
-        function saveGame() { localStorage.setItem('neonRpgV4', JSON.stringify(saveData)); }
+        let saveData = JSON.parse(localStorage.getItem('neonRpgV5')) || DEFAULT_SAVE;
+        function saveGame() { localStorage.setItem('neonRpgV5', JSON.stringify(saveData)); }
 
         // --- AUDIO ENGINE ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -231,6 +226,10 @@
             initAudio();
             state.currentClass = className;
             document.getElementById('start-overlay').style.display = 'none';
+            // FIX CRÍTICO: Garantir que a UI do jogo apareça ao escolher classe
+            document.getElementById('game-ui').style.display = 'flex';
+            document.getElementById('controls-area').style.opacity = '1';
+            
             initStats();
             initBackground();
             drawGame(Date.now());
@@ -295,7 +294,7 @@
                 ctx.fillStyle = 'rgba(255, 100, 0, 0.5)';
                 state.bgProps.forEach(p => {
                     p.y -= p.speed; if(p.y < 0) p.y = height;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, p.val * 3, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.val * 3, 0, Math.PI * 2); ctx.fill();
                 });
             } else {
                 ctx.fillStyle = '#050011'; ctx.fillRect(0,0,width,height);
@@ -378,7 +377,11 @@
 
         document.getElementById('btn-pot').addEventListener('click', () => {
             if (state.turn !== 'player') return;
-            SFX.heal(); state.hp = Math.min(state.maxHp, state.hp + (40 + (saveData.skills.hp * 5)));
+            SFX.heal(); 
+            // Cura Vida e um pouco de Mana
+            state.hp = Math.min(state.maxHp, state.hp + (40 + (saveData.skills.hp * 5)));
+            state.mp = Math.min(state.maxMp, state.mp + 10);
+            
             spawnParticles(width * 0.25, height * 0.6, '#00ff00', 30); updateHUD(); showToast("CURA", "#00ff00");
             setTimeout(enemyTurn, 800);
         });
@@ -404,7 +407,14 @@
             if(state.hp <= 0) gameOver(); else state.turn = 'player';
         }
 
-        function nextStage() { state.stage++; updateHUD(); checkStory(); }
+        function nextStage() { 
+            state.stage++; 
+            // REGEN DE MANA AO PASSAR DE FASE (FIX)
+            let regenMp = Math.floor(state.maxMp * 0.25); // 25% de regen
+            state.mp = Math.min(state.maxMp, state.mp + regenMp);
+            
+            updateHUD(); checkStory(); 
+        }
 
         function gameOver() {
             saveData.essence += state.runEssence; saveGame();
