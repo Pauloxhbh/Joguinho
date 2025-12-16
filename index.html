@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon RPG: Relics Update</title>
+    <title>Neon RPG: Stable V7</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
@@ -34,8 +34,9 @@
         .btn-atk { border-color: #ff4444; } 
         .btn-mag { border-color: #44ccff; }
         .btn-pot { border-color: #44ff44; }
+        .btn:disabled { opacity: 0.5; filter: grayscale(1); }
 
-        /* RELIC SELECTION (NOVO) */
+        /* RELIC SELECTION */
         #relic-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; }
         .relic-title { font-size: 24px; color: #ffd700; margin-bottom: 20px; text-shadow: 0 0 15px #ffd700; text-align: center; }
         .relic-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; }
@@ -73,8 +74,8 @@
     <canvas id="gameCanvas"></canvas>
 
     <div id="start-overlay">
-        <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 10px;">NEON RELICS</h1>
-        <p style="color:#888; font-size:12px;">Protocolo atualizado: Artefatos Habilitados.</p>
+        <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 10px;">NEON RPG V7</h1>
+        <p style="color:#888; font-size:12px;">Sistema Estável. Relíquias Ativas.</p>
         
         <div class="class-container">
             <button class="class-btn" style="border-color:#ff0055" onclick="chooseClass('samurai')">
@@ -89,7 +90,7 @@
         </div>
     </div>
 
-    <div class="ui-layer" id="game-ui">
+    <div class="ui-layer" id="game-ui" style="display:none;">
         <div class="hud-top">
             <div class="bars-area">
                 <div class="bar-container"><div class="bar-bg"><div id="hp-bar" class="bar-fill hp"></div></div></div>
@@ -111,8 +112,7 @@
 
     <div id="relic-overlay">
         <div class="relic-title">ARTEFATO ENCONTRADO</div>
-        <div class="relic-container" id="relic-list">
-            </div>
+        <div class="relic-container" id="relic-list"></div>
     </div>
 
     <div id="dialogue-overlay">
@@ -125,8 +125,8 @@
 
     <div id="shop-overlay">
         <div class="shop-header">
-            <h1 style="color:#ff4444">SISTEMA OFF</h1>
-            <p>Seus Artefatos foram perdidos.</p>
+            <h1 style="color:#ff4444">FALHA CRÍTICA</h1>
+            <p>Reinicializando sistema...</p>
             <div style="font-size:24px; color:#b026ff; margin-top:10px;">🟣 <span id="shop-essence-val">0</span></div>
         </div>
         <div class="skill-grid">
@@ -139,15 +139,14 @@
     </div>
 
     <script>
-        // --- DATA: RELÍQUIAS ---
+        // --- DATA ---
         const RELIC_DEX = [
-            { id: 'vamp', name: 'Dreno de Dados', icon: '🩸', desc: 'Cura 10% do dano que você causa.' },
-            { id: 'thorns', name: 'Malware Ativo', icon: '🌵', desc: 'Inimigos recebem 20% do dano que te causam.' },
-            { id: 'double', name: 'Loop Infinito', icon: '➰', desc: '25% de chance de lançar Magia 2x.' },
-            { id: 'crit', name: 'Overclock', icon: '⚡', desc: 'Dano Crítico aumenta para 300%.' },
-            { id: 'dodge', name: 'Glitch Visual', icon: '👻', desc: '15% de chance de desviar de ataques.' },
-            { id: 'exec', name: 'Comando Delete', icon: '💀', desc: 'Mata inimigos com menos de 20% HP.' },
-            { id: 'rich', name: 'Minerador', icon: '💎', desc: 'Ganha +50% de Essência.' }
+            { id: 'vamp', name: 'Dreno de Dados', icon: '🩸', desc: 'Cura 10% do dano causado.' },
+            { id: 'thorns', name: 'Malware Ativo', icon: '🌵', desc: 'Reflete 20% do dano recebido.' },
+            { id: 'double', name: 'Loop Infinito', icon: '➰', desc: '25% chance de Magia Dupla.' },
+            { id: 'crit', name: 'Overclock', icon: '⚡', desc: 'Crítico causa 3x dano.' },
+            { id: 'exec', name: 'Comando Delete', icon: '💀', desc: 'Mata inimigo com HP < 20%.' },
+            { id: 'rich', name: 'Minerador', icon: '💎', desc: '+50% Essência.' }
         ];
 
         const CLASS_STATS = {
@@ -157,17 +156,17 @@
         };
 
         const LORE = {
-            1: "Inicializando... Bem-vindo ao Grid. \nInimigos básicos à frente. Seus sistemas estão operantes.",
-            5: "ALERTA: Firewall Guardião. \nDerrote este Boss para obter acesso a um ARTEFATO DO SISTEMA.",
-            6: "Setor de Processamento (Overheat). \nO calor está aumentando. Mantenha os níveis de refrigeração.",
-            10: "ALERTA: Incinerador. \nPrepare-se para impacto pesado. Artefato aguardando extração.",
-            11: "Entrando no VOID. \nDados corrompidos em massa. Cuidado."
+            1: "Bem-vindo ao Grid. Elimine os dados hostis.",
+            5: "Boss detectado. Prepare-se para extrair Artefato.",
+            6: "Setor instável. Temperatura subindo.",
+            10: "Incinerador detectado. Cuidado com o fogo.",
+            11: "Entrando no Vazio."
         };
 
         // --- CORE ---
         const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, crit: 0 } };
-        let saveData = JSON.parse(localStorage.getItem('neonRpgV6')) || DEFAULT_SAVE;
-        function saveGame() { localStorage.setItem('neonRpgV6', JSON.stringify(saveData)); }
+        let saveData = JSON.parse(localStorage.getItem('neonRpgV7')) || DEFAULT_SAVE;
+        function saveGame() { localStorage.setItem('neonRpgV7', JSON.stringify(saveData)); }
 
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
@@ -186,17 +185,12 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let width, height;
+        let gameLoopId = null; // IMPORTANTE: Guarda o ID do loop
+
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
 
-        let state = { 
-            turn: 'player', stage: 1, 
-            hp: 0, maxHp: 0, mp: 0, maxMp: 0, 
-            enemyHp: 0, enemyMaxHp: 0, isBoss: false, 
-            particles: [], shake: 0, runEssence: 0,
-            currentClass: 'samurai', bgProps: [],
-            relics: [] // Lista de IDs de relíquias da run atual
-        };
+        let state = { turn: 'player', stage: 1, hp: 0, maxHp: 0, mp: 0, maxMp: 0, enemyHp: 0, enemyMaxHp: 0, isBoss: false, particles: [], shake: 0, runEssence: 0, currentClass: 'samurai', bgProps: [], relics: [] };
 
         function initBackground() {
             state.bgProps = [];
@@ -205,10 +199,12 @@
 
         function chooseClass(className) {
             initAudio();
+            // CANCELA LOOP ANTERIOR (CORREÇÃO DO BUG DE VELOCIDADE)
+            if(gameLoopId) cancelAnimationFrame(gameLoopId);
+
             state.currentClass = className;
             document.getElementById('start-overlay').style.display = 'none';
-            document.getElementById('game-ui').style.display = 'flex';
-            document.getElementById('controls-area').style.opacity = '1';
+            document.getElementById('game-ui').style.display = 'flex'; // Garante UI visivel
             
             initStats();
             initBackground();
@@ -223,10 +219,17 @@
             state.maxMp = Math.floor(baseMp * cls.mpMult); state.mp = state.maxMp;
             
             state.stage = 1; state.runEssence = 0; state.turn = 'player';
-            state.relics = []; // Reset relics on new run
+            state.relics = []; 
+            toggleButtons(true);
             
             updateHUD();
             checkStory();
+        }
+
+        function toggleButtons(enable) {
+            document.getElementById('btn-atk').disabled = !enable;
+            document.getElementById('btn-mag').disabled = !enable;
+            document.getElementById('btn-pot').disabled = !enable;
         }
 
         function checkStory() {
@@ -234,6 +237,7 @@
                 document.getElementById('story-text').innerText = LORE[state.stage];
                 document.getElementById('dialogue-overlay').style.display = 'flex';
                 document.getElementById('controls-area').style.opacity = '0';
+                state.turn = 'dialogue'; // Trava cliques
             } else { startBattle(); }
         }
 
@@ -245,27 +249,25 @@
 
         function startBattle() {
             state.isBoss = (state.stage % 5 === 0);
-            state.enemyMaxHp = Math.floor(100 + (state.stage * 25)); // Dificuldade ajustada
+            state.enemyMaxHp = Math.floor(100 + (state.stage * 25));
             if(state.isBoss) state.enemyMaxHp *= 2.5;
             state.enemyHp = state.enemyMaxHp;
             state.turn = 'player';
+            toggleButtons(true);
         }
 
-        // --- RELIC SYSTEM ---
+        // --- RELICS ---
         function openRelicSelection() {
-            // Seleciona 3 relíquias aleatórias
             const options = [];
             while(options.length < 3) {
                 const r = RELIC_DEX[Math.floor(Math.random() * RELIC_DEX.length)];
                 if(!options.includes(r) && !state.relics.includes(r.id)) options.push(r);
-                if(state.relics.length >= RELIC_DEX.length) break; // Se ja tem todas
+                if(state.relics.length >= RELIC_DEX.length) break;
             }
-            
-            if(options.length === 0) { nextStage(); return; } // Sem opções, pula
+            if(options.length === 0) { nextStage(); return; }
 
             const container = document.getElementById('relic-list');
             container.innerHTML = '';
-            
             options.forEach(r => {
                 const div = document.createElement('div');
                 div.className = 'relic-card';
@@ -274,43 +276,27 @@
                 container.appendChild(div);
             });
 
-            document.getElementById('game-ui').style.display = 'none'; // Esconde HUD
+            document.getElementById('game-ui').style.display = 'none';
             document.getElementById('relic-overlay').style.display = 'flex';
+            state.turn = 'menu'; // Trava jogo
         }
 
         function pickRelic(id) {
-            state.relics.push(id);
-            SFX.relic();
+            state.relics.push(id); SFX.relic();
             document.getElementById('relic-overlay').style.display = 'none';
             document.getElementById('game-ui').style.display = 'flex';
-            showToast("ARTEFATO INSTALADO", "#ffd700");
+            showToast("INSTALADO", "#ffd700");
             nextStageLogic();
         }
 
-        // --- DRAW ---
-        class Particle {
-            constructor(x, y, color, speed, size) {
-                this.x = x; this.y = y; this.color = color; this.size = size;
-                this.vx = (Math.random() - 0.5) * speed; this.vy = (Math.random() - 0.5) * speed; this.life = 1.0;
-            }
-            update() { this.x += this.vx; this.y += this.vy; this.life -= 0.03; }
-            draw(ctx) { ctx.globalAlpha = Math.max(0, this.life); ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1.0; }
-        }
-        function spawnParticles(x, y, color, count) { for(let i=0; i<count; i++) state.particles.push(new Particle(x, y, color, 15, Math.random() * 4 + 1)); }
-        function screenShake(amount) { state.shake = amount; }
-
+        // --- DRAW LOOP ---
         function drawGame(time) {
-            // BG
-            if(state.stage <= 5) {
-                ctx.fillStyle = '#001100'; ctx.fillRect(0,0,width,height); ctx.fillStyle = '#00ff00';
-                state.bgProps.forEach(p => { p.y += p.speed; if(p.y > height) p.y=0; if(Math.random()>0.98) ctx.fillRect(p.x, p.y, 2, 6); });
-            } else if(state.stage <= 10) {
-                ctx.fillStyle = '#1a0500'; ctx.fillRect(0,0,width,height); ctx.fillStyle = 'rgba(255,100,0,0.5)';
-                state.bgProps.forEach(p => { p.y -= p.speed; if(p.y < 0) p.y=height; ctx.beginPath(); ctx.arc(p.x, p.y, p.val*3, 0, Math.PI*2); ctx.fill(); });
-            } else {
-                ctx.fillStyle = '#050011'; ctx.fillRect(0,0,width,height); ctx.fillStyle = '#fff';
-                state.bgProps.forEach(p => { p.x+=(p.x-width/2)*0.01; p.y+=(p.y-height/2)*0.01; if(p.x<0||p.x>width) p.x=Math.random()*width; ctx.fillRect(p.x, p.y, 2, 2); });
-            }
+            // BG Logic (Simplified for stability)
+            ctx.fillStyle = '#050505'; ctx.fillRect(0,0,width,height);
+            
+            if(state.stage <= 5) { ctx.fillStyle = '#00ff00'; state.bgProps.forEach(p=>{ p.y+=p.speed; if(p.y>height)p.y=0; if(Math.random()>0.98)ctx.fillRect(p.x,p.y,2,6); }); }
+            else if(state.stage <= 10) { ctx.fillStyle = 'rgba(255,100,0,0.5)'; state.bgProps.forEach(p=>{ p.y-=p.speed; if(p.y<0)p.y=height; ctx.beginPath(); ctx.arc(p.x,p.y,p.val*3,0,Math.PI*2); ctx.fill(); }); }
+            else { ctx.fillStyle = '#fff'; state.bgProps.forEach(p=>{ p.x+=(p.x-width/2)*0.01; p.y+=(p.y-height/2)*0.01; if(p.x<0||p.x>width)p.x=Math.random()*width; ctx.fillRect(p.x,p.y,2,2); }); }
 
             ctx.save();
             if (state.shake > 0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake *= 0.9; if(state.shake < 0.5) state.shake = 0; }
@@ -333,7 +319,6 @@
                 ctx.save(); ctx.translate(ex, ey); ctx.rotate(Math.sin(time/1000)*0.1);
                 if(state.isBoss) { ctx.beginPath(); for(let i=0; i<6; i++) ctx.lineTo(size*Math.cos(i*Math.PI/3), size*Math.sin(i*Math.PI/3)); ctx.fill(); }
                 else { ctx.fillRect(-size/2, -size/2, size, size); }
-                ctx.fillStyle = '#ffff00'; ctx.shadowBlur=10; ctx.beginPath(); ctx.arc(-20, -10, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(20, -10, 5, 0, Math.PI*2); ctx.fill();
                 ctx.restore();
                 
                 ctx.shadowBlur=0; ctx.fillStyle='#333'; ctx.fillRect(ex-50, ey-size-20, 100, 8);
@@ -341,10 +326,13 @@
             }
 
             state.particles.forEach((p, idx) => { p.update(); p.draw(ctx); if(p.life <= 0) state.particles.splice(idx,1); });
-            ctx.restore(); requestAnimationFrame(() => drawGame(Date.now()));
+            ctx.restore(); 
+            
+            // LOOP CONTROLADO
+            gameLoopId = requestAnimationFrame(() => drawGame(Date.now()));
         }
 
-        // --- COMBAT LOGIC ---
+        // --- ACTIONS ---
         function updateHUD() {
             document.getElementById('hp-bar').style.width = (state.hp / state.maxHp * 100) + '%';
             document.getElementById('mp-bar').style.width = (state.mp / state.maxMp * 100) + '%';
@@ -355,121 +343,81 @@
 
         document.getElementById('btn-atk').addEventListener('click', () => {
             if (state.turn !== 'player') return;
-            state.turn = 'anim'; SFX.hit(); spawnParticles(width*0.75, height*0.6, '#ffaa00', 30); screenShake(15);
-            
-            const cls = CLASS_STATS[state.currentClass];
-            let dmg = (15 + (saveData.skills.atk * 5)) + cls.atkBonus;
-            dmg += Math.floor(Math.random() * 5);
-            
-            // Relic: Overclock (Crit 300%)
-            let critMult = state.relics.includes('crit') ? 3 : 2;
-            let critChance = 0.05 + (saveData.skills.crit * 0.02) + cls.critBonus;
-            
-            if(Math.random() < critChance) { dmg = Math.floor(dmg * critMult); showToast("CRÍTICO!", "#ffcc00"); screenShake(30); } 
-            else { showToast(dmg); }
-            
-            // Relic: Vampirism
-            if(state.relics.includes('vamp')) {
-                let heal = Math.ceil(dmg * 0.1);
-                state.hp = Math.min(state.maxHp, state.hp + heal);
-                updateHUD();
-            }
-
-            dealDamage(dmg);
+            performAction('atk');
         });
 
         document.getElementById('btn-mag').addEventListener('click', () => {
             if (state.turn !== 'player' || state.mp < 15) return;
-            state.mp -= 15; updateHUD(); SFX.magic();
-            const cls = CLASS_STATS[state.currentClass];
-            spawnParticles(width*0.75, height*0.6, cls.color, 50); screenShake(10);
-            
-            let dmg = 40 + (saveData.skills.atk * 8);
-            if(cls.magicMult) dmg = Math.floor(dmg * cls.magicMult);
-            
-            // Relic: Double Cast
-            if(state.relics.includes('double') && Math.random() < 0.25) {
-                setTimeout(() => { 
-                    showToast("LOOP!", "#00ffff"); 
-                    dealDamage(dmg); 
-                }, 300);
-            }
-            
-            showToast("MAGIA", cls.color); dealDamage(dmg);
+            state.mp -= 15; updateHUD(); performAction('mag');
         });
 
         document.getElementById('btn-pot').addEventListener('click', () => {
             if (state.turn !== 'player') return;
-            SFX.heal(); 
-            state.hp = Math.min(state.maxHp, state.hp + (40 + (saveData.skills.hp * 5)));
-            state.mp = Math.min(state.maxMp, state.mp + 15);
-            spawnParticles(width*0.25, height*0.6, '#00ff00', 30); updateHUD(); showToast("CURA", "#00ff00");
-            setTimeout(enemyTurn, 800);
+            performAction('pot');
         });
+
+        function performAction(type) {
+            state.turn = 'anim'; toggleButtons(false); // TRAVA BOTOES
+            const cls = CLASS_STATS[state.currentClass];
+            
+            if(type === 'atk') {
+                SFX.hit(); spawnParticles(width*0.75, height*0.6, '#ffaa00', 30); screenShake(15);
+                let dmg = (15 + (saveData.skills.atk * 5)) + cls.atkBonus + Math.floor(Math.random()*5);
+                let critMult = state.relics.includes('crit') ? 3 : 2;
+                let critChance = 0.05 + (saveData.skills.crit * 0.02) + cls.critBonus;
+                if(Math.random() < critChance) { dmg = Math.floor(dmg * critMult); showToast("CRÍTICO!", "#ffcc00"); screenShake(30); } else { showToast(dmg); }
+                if(state.relics.includes('vamp')) { state.hp = Math.min(state.maxHp, state.hp + Math.ceil(dmg*0.1)); updateHUD(); }
+                dealDamage(dmg);
+            }
+            else if(type === 'mag') {
+                SFX.magic(); spawnParticles(width*0.75, height*0.6, cls.color, 50); screenShake(10);
+                let dmg = 40 + (saveData.skills.atk * 8);
+                if(cls.magicMult) dmg = Math.floor(dmg * cls.magicMult);
+                if(state.relics.includes('double') && Math.random() < 0.25) { setTimeout(() => { showToast("LOOP!", "#00ffff"); dealDamage(dmg); }, 300); }
+                showToast("MAGIA", cls.color); dealDamage(dmg);
+            }
+            else if(type === 'pot') {
+                SFX.heal(); state.hp = Math.min(state.maxHp, state.hp + (40 + (saveData.skills.hp * 5))); state.mp = Math.min(state.maxMp, state.mp + 15);
+                spawnParticles(width*0.25, height*0.6, '#00ff00', 30); updateHUD(); showToast("CURA", "#00ff00");
+                setTimeout(enemyTurn, 800);
+            }
+        }
 
         function dealDamage(amount) {
             state.enemyHp -= amount;
-            
-            // Relic: Executioner (Delete)
-            if(state.relics.includes('exec') && state.enemyHp < state.enemyMaxHp * 0.2 && state.enemyHp > 0) {
-                state.enemyHp = 0;
-                showToast("DELETE", "#555");
-            }
+            if(state.relics.includes('exec') && state.enemyHp < state.enemyMaxHp * 0.2 && state.enemyHp > 0) state.enemyHp = 0;
 
             if(state.enemyHp <= 0) {
                 state.enemyHp = 0; spawnParticles(width*0.75, height*0.6, '#b026ff', 80); SFX.coin();
-                
-                // Essence Calculation
                 let essenceGain = 5 + Math.floor(state.stage * 1.5);
                 if(state.isBoss) essenceGain *= 5;
                 if(state.relics.includes('rich')) essenceGain = Math.floor(essenceGain * 1.5);
                 state.runEssence += essenceGain;
-                
                 showToast(`+${essenceGain} Essence`, "#b026ff");
                 
-                // Check for Relic Reward (After Boss)
-                if(state.isBoss) {
-                    setTimeout(openRelicSelection, 1500);
-                } else {
-                    setTimeout(nextStage, 1500);
-                }
+                if(state.isBoss) setTimeout(openRelicSelection, 1500); 
+                else setTimeout(nextStage, 1500);
             } else { setTimeout(enemyTurn, 800); }
         }
 
         function enemyTurn() {
             state.turn = 'enemy';
-            
-            // Relic: Dodge (Glitch)
-            if(state.relics.includes('dodge') && Math.random() < 0.15) {
-                showToast("GLITCH (Miss)", "#aaa");
-                state.turn = 'player';
-                return;
-            }
+            if(state.relics.includes('dodge') && Math.random() < 0.15) { showToast("GLITCH", "#aaa"); state.turn = 'player'; toggleButtons(true); return; }
 
             const cls = CLASS_STATS[state.currentClass];
             let dmg = (8 + Math.floor(state.stage * 1.8)) * (state.isBoss ? 1.5 : 1);
             if(cls.defBonus) dmg = Math.max(1, dmg - cls.defBonus);
-            
-            state.hp -= dmg; 
-            
-            // Relic: Thorns
-            if(state.relics.includes('thorns')) {
-                let reflect = Math.ceil(dmg * 0.2);
-                state.enemyHp -= reflect;
-                showToast(`Refletido ${reflect}`, "#ff4444");
-            }
+            state.hp -= dmg;
+            if(state.relics.includes('thorns')) state.enemyHp -= Math.ceil(dmg*0.2);
 
             spawnParticles(width*0.25, height*0.6, '#ff0000', 20); screenShake(20); updateHUD();
-            
-            if(state.hp <= 0) gameOver(); else state.turn = 'player';
+            if(state.hp <= 0) gameOver(); else { state.turn = 'player'; toggleButtons(true); }
         }
 
         function nextStage() { nextStageLogic(); }
-
         function nextStageLogic() {
             state.stage++;
-            let regenMp = Math.floor(state.maxMp * 0.25); 
-            state.mp = Math.min(state.maxMp, state.mp + regenMp);
+            state.mp = Math.min(state.maxMp, state.mp + Math.floor(state.maxMp * 0.25));
             updateHUD(); checkStory();
         }
 
