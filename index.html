@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon RPG: Protocolo Final</title>
+    <title>Neon RPG: V13 Sprites</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
@@ -33,7 +33,7 @@
         .btn-atk { border-color: #ff4444; } .btn-mag { border-color: #44ccff; } .btn-pot { border-color: #44ff44; }
         .btn:disabled, .btn.low-mana { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; border-color: #555; }
 
-        /* RELIC & SHOP */
+        /* OVERLAYS */
         #relic-overlay, #shop-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; }
         .relic-title, .shop-header h1 { font-size: 24px; margin-bottom: 20px; text-align: center; }
         .relic-title { color: #ffd700; text-shadow: 0 0 15px #ffd700; }
@@ -50,8 +50,8 @@
         .buy-btn.can-buy { background: #b026ff; color: black; font-weight: bold; }
         #restart-btn { width: 100%; max-width: 300px; padding: 15px; background: #ff4444; border: none; font-family: 'Orbitron'; font-size: 16px; font-weight: bold; color: black; border-radius: 8px; cursor: pointer; margin-top: 20px; }
 
-        /* DIALOGUE (TYPEWRITER STYLE) */
-        #dialogue-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; justify-content: flex-end; padding: 20px; pointer-events: auto; z-index: 20; }
+        /* DIALOGUE */
+        #dialogue-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; flex-direction: column; justify-content: flex-end; padding: 20px; pointer-events: auto; z-index: 20; }
         .dialogue-box { background: rgba(10, 15, 25, 0.95); border: 1px solid #00ffff; border-top: 3px solid #00ffff; padding: 25px; box-shadow: 0 -5px 20px rgba(0, 255, 255, 0.2); backdrop-filter: blur(10px); margin-bottom: 20px; border-radius: 12px; }
         .char-name { color: #00ffff; font-size: 14px; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; }
         .char-name::before { content: '►'; margin-right: 10px; font-size: 10px; animation: blink 1s infinite; }
@@ -60,7 +60,7 @@
         .next-btn:active { background: #00ffff; color: #000; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* START SCREEN (LORE) */
+        /* START */
         #start-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #050505; z-index: 40; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: auto; padding: 20px; text-align: center; }
         .start-content { max-width: 500px; width: 100%; }
         .intro-text { font-family: 'Roboto Mono'; font-size: 12px; color: #aaa; margin-bottom: 30px; line-height: 1.6; text-align: center; border-left: 2px solid #333; padding-left: 15px; margin-left: 10px; text-align: left; }
@@ -79,40 +79,12 @@
     <div id="start-overlay">
         <div class="start-content">
             <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 15px; font-size: 32px;">NEON PROTOCOL</h1>
-            
-            <div class="intro-text">
-                AVISO DO SISTEMA: <br><br>
-                O Mainframe foi corrompido. Vírus desconhecidos tomaram os setores de memória. <br><br>
-                Você é o <strong>Protocolo Neon</strong>, a última defesa.
-                Sua missão: Eliminar a corrupção, coletar artefatos e reiniciar o Núcleo.
-            </div>
-            
+            <div class="intro-text">AVISO: Mainframe corrompido. <br><br>Você é o <strong>Protocolo Neon</strong>. <br>Sua missão: Reiniciar o Núcleo.</div>
             <p style="color:#fff; font-size:12px; margin-bottom:15px; text-align: left; margin-left: 10px; font-weight: bold;">SELECIONE SEU MÓDULO:</p>
-            
             <div class="class-container">
-                <button class="class-btn" style="border-color:#ff0055" onclick="chooseClass('samurai')">
-                    <div>
-                        <div style="font-weight:bold; color:#ff0055; font-size: 16px;">LÂMINA VERMELHA</div>
-                        <small style="font-family:'Roboto Mono'; font-size:11px; color:#ccc;">Focado em Dano Crítico.</small>
-                    </div>
-                    <div style="font-size:24px">⚔️</div>
-                </button>
-
-                <button class="class-btn" style="border-color:#00ffff" onclick="chooseClass('mage')">
-                    <div>
-                        <div style="font-weight:bold; color:#00ffff; font-size: 16px;">CÓDIGO AZUL</div>
-                        <small style="font-family:'Roboto Mono'; font-size:11px; color:#ccc;">Especialista em Magia (MP).</small>
-                    </div>
-                    <div style="font-size:24px">✨</div>
-                </button>
-
-                <button class="class-btn" style="border-color:#00ff00" onclick="chooseClass('tank')">
-                    <div>
-                        <div style="font-weight:bold; color:#00ff00; font-size: 16px;">FIREWALL VERDE</div>
-                        <small style="font-family:'Roboto Mono'; font-size:11px; color:#ccc;">Blindagem Pesada (HP).</small>
-                    </div>
-                    <div style="font-size:24px">🛡️</div>
-                </button>
+                <button class="class-btn" style="border-color:#ff0055" onclick="chooseClass('samurai')"><div><div style="font-weight:bold; color:#ff0055; font-size: 16px;">LÂMINA VERMELHA</div><small style="font-family:'Roboto Mono'; font-size:11px; color:#ccc;">Focado em Dano Crítico.</small></div><div style="font-size:24px">⚔️</div></button>
+                <button class="class-btn" style="border-color:#00ffff" onclick="chooseClass('mage')"><div><div style="font-weight:bold; color:#00ffff; font-size: 16px;">CÓDIGO AZUL</div><small style="font-family:'Roboto Mono'; font-size:11px; color:#ccc;">Especialista em Magia.</small></div><div style="font-size:24px">✨</div></button>
+                <button class="class-btn" style="border-color:#00ff00" onclick="chooseClass('tank')"><div><div style="font-weight:bold; color:#00ff00; font-size: 16px;">FIREWALL VERDE</div><small style="font-family:'Roboto Mono'; font-size:11px; color:#ccc;">Blindagem Pesada.</small></div><div style="font-size:24px">🛡️</div></button>
             </div>
         </div>
     </div>
@@ -139,7 +111,7 @@
 
     <div id="relic-overlay"><div class="relic-title">ARTEFATO ENCONTRADO</div><div class="relic-container" id="relic-list"></div></div>
     <div id="shop-overlay">
-        <div class="shop-header"><h1>SINAL PERDIDO</h1><p>Código Deletado. Reconstruindo...</p><div style="font-size:24px; color:#b026ff; margin-top:10px;">🟣 <span id="shop-essence-val">0</span></div></div>
+        <div class="shop-header"><h1>SINAL PERDIDO</h1><p>Código Deletado.</p><div style="font-size:24px; color:#b026ff; margin-top:10px;">🟣 <span id="shop-essence-val">0</span></div></div>
         <div class="skill-grid">
             <div class="skill-card"><span>⚔️</span><div>FORÇA</div><div style="color:#aaa">v.<span id="lvl-atk">0</span></div><button class="buy-btn" id="buy-atk" onclick="buyUpgrade('atk')">UP</button></div>
             <div class="skill-card"><span>❤️</span><div>VIDA</div><div style="color:#aaa">v.<span id="lvl-hp">0</span></div><button class="buy-btn" id="buy-hp" onclick="buyUpgrade('hp')">UP</button></div>
@@ -148,7 +120,6 @@
         </div>
         <button id="restart-btn" onclick="restartToMenu()">VOLTAR AO MENU</button>
     </div>
-
     <div id="dialogue-overlay">
         <div class="dialogue-box">
             <div class="char-name">LOG DO SISTEMA // ENCRYPTED</div>
@@ -158,23 +129,15 @@
     </div>
 
     <script>
-        // --- DATA & LORE (AQUI ESTÁ A LORE COMPLETA) ---
+        // --- DATA ---
         const LORE = {
-            1: "Inicializando... Conexão estável.\n\nBem-vindo ao Setor Periférico (The Grid). Detecto fragmentos de dados hostis à frente. Eles são fracos, mas numerosos. \n\nInicie o protocolo de limpeza.",
-            
-            3: "Atenção: A densidade da corrupção está aumentando. \n\nEsses programas não estão apenas com defeito; eles estão sendo reescritos por algo maior. Mantenha seus escudos ativos.",
-            
-            5: "ALERTA CRÍTICO: Guardião do Setor detectado. \n\nEste Firewall antigamente protegia o sistema, agora ele bloqueia nosso acesso. Você precisa destruí-lo para obter o Artefato de Acesso.",
-            
-            6: "Acesso concedido ao Setor de Processamento. \n\nCuidado: A temperatura aqui é crítica (OVERHEAT). O ambiente está instável e visualmente agressivo.",
-            
-            8: "Detecto assinaturas de código antigo nas paredes. \n\nParece que outros protocolos tentaram limpar este setor antes de nós... e falharam. Não cometa o mesmo erro.",
-            
-            10: "ALERTA DE CHEFE: O Incinerador. \n\nEsta entidade é responsável pelo superaquecimento. Se não o pararmos agora, o hardware vai derreter.",
-            
-            11: "Entrando no VOID (Vazio). \n\nNão há mais dados aqui. Apenas estrelas mortas e arquivos deletados. O Núcleo do Sistema deve estar escondido nessa escuridão. Fique alerta."
+            1: "Inicializando... Conexão estável.\nBem-vindo ao Setor Periférico (The Grid). Detecto fragmentos de dados hostis à frente.",
+            3: "Atenção: A densidade da corrupção está aumentando. Mantenha seus escudos ativos.",
+            5: "ALERTA CRÍTICO: Guardião do Setor detectado. Destrua-o para obter o Artefato.",
+            6: "Acesso concedido ao Setor de Processamento. Cuidado: Temperatura crítica (OVERHEAT).",
+            10: "ALERTA DE CHEFE: O Incinerador. Se não o pararmos, o hardware vai derreter.",
+            11: "Entrando no VOID (Vazio). Dados deletados e escuridão."
         };
-
         const RELIC_DEX = [
             { id: 'vamp', name: 'Dreno de Dados', icon: '🩸', desc: 'Cura 10% do dano causado.' },
             { id: 'thorns', name: 'Malware Ativo', icon: '🌵', desc: 'Reflete 20% do dano recebido.' },
@@ -183,16 +146,14 @@
             { id: 'exec', name: 'Comando Delete', icon: '💀', desc: 'Mata inimigo se HP < 20%.' },
             { id: 'rich', name: 'Minerador', icon: '💎', desc: '+50% Essência.' }
         ];
-
         const CLASS_STATS = {
             samurai: { name: "Lâmina", color: "#ff0055", hpMult: 0.8, mpMult: 0.8, atkBonus: 5, critBonus: 0.15 },
             mage:    { name: "Código",    color: "#00ffff", hpMult: 0.7, mpMult: 1.5, atkBonus: 0, magicMult: 1.3 },
             tank:    { name: "Firewall",    color: "#00ff00", hpMult: 1.4, mpMult: 0.5, atkBonus: -2, defBonus: 2 }
         };
-
         const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, crit: 0 } };
-        let saveData = JSON.parse(localStorage.getItem('neonRpgV11')) || DEFAULT_SAVE;
-        function saveGame() { localStorage.setItem('neonRpgV11', JSON.stringify(saveData)); }
+        let saveData = JSON.parse(localStorage.getItem('neonRpgV13')) || DEFAULT_SAVE;
+        function saveGame() { localStorage.setItem('neonRpgV13', JSON.stringify(saveData)); }
 
         // --- AUDIO ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -215,9 +176,23 @@
         let dialogueState = { text: '', index: 0, isTyping: false, timer: null };
         let state = { turn: 'player', stage: 1, hp: 0, maxHp: 0, mp: 0, maxMp: 0, enemyHp: 0, enemyMaxHp: 0, isBoss: false, particles: [], shake: 0, runEssence: 0, currentClass: 'samurai', bgProps: [], relics: [] };
 
+        // SPRITES
+        const playerSprite = new Image();
+        const enemySprite = new Image();
+
         function initBackground() { state.bgProps = []; for(let i=0; i<50; i++) state.bgProps.push({ x: Math.random()*width, y: Math.random()*height, speed: Math.random()*2+1, val: Math.random() }); }
         
-        function chooseClass(className) { initAudio(); if(gameLoopId) cancelAnimationFrame(gameLoopId); state.currentClass = className; document.getElementById('start-overlay').style.display = 'none'; document.getElementById('game-ui').style.display = 'flex'; initStats(); initBackground(); drawGame(Date.now()); }
+        function chooseClass(className) { 
+            initAudio(); if(gameLoopId) cancelAnimationFrame(gameLoopId); 
+            state.currentClass = className; 
+            document.getElementById('start-overlay').style.display = 'none'; 
+            document.getElementById('game-ui').style.display = 'flex'; 
+            
+            // Load Player Sprite (Robot Set 1)
+            playerSprite.src = `https://robohash.org/Neon${className}?set=set1`;
+            
+            initStats(); initBackground(); drawGame(Date.now()); 
+        }
         
         function initStats() {
             const cls = CLASS_STATS[state.currentClass]; const baseHp = 100 + (saveData.skills.hp * 20); state.maxHp = Math.floor(baseHp * cls.hpMult); state.hp = state.maxHp; const baseMp = 50 + (saveData.skills.mp * 15); state.maxMp = Math.floor(baseMp * cls.mpMult); state.mp = state.maxMp;
@@ -231,49 +206,32 @@
             const magBtn = document.getElementById('btn-mag'); if(state.mp < 15) magBtn.classList.add('low-mana'); else magBtn.classList.remove('low-mana');
         }
 
-        // --- TYPEWRITER DIALOGUE ---
-        function checkStory() {
-            if (LORE[state.stage]) { startDialogue(LORE[state.stage]); } else { startBattle(); }
-        }
-
+        // --- DIALOGUE ---
+        function checkStory() { if (LORE[state.stage]) { startDialogue(LORE[state.stage]); } else { startBattle(); } }
         function startDialogue(text) {
-            document.getElementById('dialogue-overlay').style.display = 'flex';
-            document.getElementById('controls-area').style.opacity = '0';
-            state.turn = 'dialogue';
-            dialogueState.text = text; dialogueState.index = 0; dialogueState.isTyping = true;
-            document.getElementById('story-text').innerText = '';
-            document.getElementById('dialogue-btn').style.opacity = '0.5';
-            if(dialogueState.timer) clearTimeout(dialogueState.timer);
-            typeWriter();
+            document.getElementById('dialogue-overlay').style.display = 'flex'; document.getElementById('controls-area').style.opacity = '0'; state.turn = 'dialogue';
+            dialogueState.text = text; dialogueState.index = 0; dialogueState.isTyping = true; document.getElementById('story-text').innerText = ''; document.getElementById('dialogue-btn').style.opacity = '0.5';
+            if(dialogueState.timer) clearTimeout(dialogueState.timer); typeWriter();
         }
-
         function typeWriter() {
-            if (dialogueState.index < dialogueState.text.length) {
-                document.getElementById('story-text').innerText += dialogueState.text.charAt(dialogueState.index);
-                dialogueState.index++; SFX.type();
-                dialogueState.timer = setTimeout(typeWriter, 35);
-            } else { finishTyping(); }
+            if (dialogueState.index < dialogueState.text.length) { document.getElementById('story-text').innerText += dialogueState.text.charAt(dialogueState.index); dialogueState.index++; SFX.type(); dialogueState.timer = setTimeout(typeWriter, 35); } 
+            else { finishTyping(); }
         }
+        function finishTyping() { if(dialogueState.timer) clearTimeout(dialogueState.timer); document.getElementById('story-text').innerText = dialogueState.text; dialogueState.isTyping = false; document.getElementById('dialogue-btn').style.opacity = '1'; }
+        function handleDialogueClick() { if (dialogueState.isTyping) { finishTyping(); } else { closeDialogue(); } }
+        function closeDialogue() { document.getElementById('dialogue-overlay').style.display = 'none'; document.getElementById('controls-area').style.opacity = '1'; startBattle(); }
 
-        function finishTyping() {
-            if(dialogueState.timer) clearTimeout(dialogueState.timer);
-            document.getElementById('story-text').innerText = dialogueState.text;
-            dialogueState.isTyping = false;
-            document.getElementById('dialogue-btn').style.opacity = '1';
-        }
+        function startBattle() { 
+            state.isBoss = (state.stage % 5 === 0); 
+            state.enemyMaxHp = Math.floor(100 + (state.stage * 25)); 
+            if(state.isBoss) state.enemyMaxHp *= 2.5; 
+            state.enemyHp = state.enemyMaxHp; 
+            
+            // Load Enemy Sprite (Monster Set 2)
+            let spriteId = state.isBoss ? `BOSS${state.stage}` : `Virus${state.stage}`;
+            enemySprite.src = `https://robohash.org/${spriteId}?set=set2`;
 
-        function handleDialogueClick() {
-            if (dialogueState.isTyping) { finishTyping(); } else { closeDialogue(); }
-        }
-
-        function closeDialogue() {
-            document.getElementById('dialogue-overlay').style.display = 'none';
-            document.getElementById('controls-area').style.opacity = '1';
-            startBattle();
-        }
-
-        function startBattle() {
-            state.isBoss = (state.stage % 5 === 0); state.enemyMaxHp = Math.floor(100 + (state.stage * 25)); if(state.isBoss) state.enemyMaxHp *= 2.5; state.enemyHp = state.enemyMaxHp; state.turn = 'player'; toggleButtons(true);
+            state.turn = 'player'; toggleButtons(true); 
         }
 
         // --- ACTIONS ---
@@ -285,41 +243,36 @@
             if(state.turn !== 'player') return;
             if(type === 'mag' && state.mp < 15) { showToast("SEM MANA", "#44ccff"); return; }
             state.turn = 'anim'; toggleButtons(false); const cls = CLASS_STATS[state.currentClass];
-            
             if(type === 'atk') {
-                SFX.hit(); spawnParticles(width*0.75, height*0.6, '#ffaa00', 30); screenShake(15);
+                SFX.hit(); spawnParticles(width*0.25, height*0.75, '#ffaa00', 30); screenShake(15);
                 let dmg = (15 + (saveData.skills.atk * 5)) + cls.atkBonus + Math.floor(Math.random()*5); let critMult = state.relics.includes('crit') ? 3 : 2;
                 if(Math.random() < (0.05 + cls.critBonus)) { dmg *= critMult; showToast("CRÍTICO!", "#ffcc00"); screenShake(30); } else showToast(dmg);
                 if(state.relics.includes('vamp')) { state.hp = Math.min(state.maxHp, state.hp + Math.ceil(dmg*0.1)); updateHUD(); }
                 dealDamage(dmg);
             } else if(type === 'mag') {
-                state.mp -= 15; updateHUD(); SFX.magic(); spawnParticles(width*0.75, height*0.6, cls.color, 50); screenShake(10);
+                state.mp -= 15; updateHUD(); SFX.magic(); spawnParticles(width*0.25, height*0.75, cls.color, 50); screenShake(10);
                 let dmg = Math.floor((40 + (saveData.skills.atk * 8)) * (cls.magicMult || 1));
                 if(state.relics.includes('double') && Math.random() < 0.25) setTimeout(() => { showToast("LOOP!", "#00ffff"); dealDamage(dmg); }, 300);
                 showToast("MAGIA", cls.color); dealDamage(dmg);
             } else if(type === 'pot') {
-                SFX.heal(); state.hp = Math.min(state.maxHp, state.hp + (40 + (saveData.skills.hp * 5))); state.mp = Math.min(state.maxMp, state.mp + 15); spawnParticles(width*0.25, height*0.6, '#00ff00', 30); updateHUD(); showToast("CURA", "#00ff00"); setTimeout(enemyTurn, 800);
+                SFX.heal(); state.hp = Math.min(state.maxHp, state.hp + (40 + (saveData.skills.hp * 5))); state.mp = Math.min(state.maxMp, state.mp + 15); spawnParticles(width*0.25, height*0.75, '#00ff00', 30); updateHUD(); showToast("CURA", "#00ff00"); setTimeout(enemyTurn, 800);
             }
         }
-
         function dealDamage(amount) {
             state.enemyHp -= amount; if(state.relics.includes('exec') && state.enemyHp < state.enemyMaxHp * 0.2) state.enemyHp = 0;
             if(state.enemyHp <= 0) {
-                state.enemyHp = 0; spawnParticles(width*0.75, height*0.6, '#b026ff', 80); SFX.coin();
+                state.enemyHp = 0; spawnParticles(width*0.75, height*0.45, '#b026ff', 80); SFX.coin();
                 let essenceGain = 5 + Math.floor(state.stage * 1.5); if(state.isBoss) essenceGain *= 5; if(state.relics.includes('rich')) essenceGain *= 1.5; state.runEssence += Math.floor(essenceGain); showToast(`+${Math.floor(essenceGain)} ESS`, "#b026ff");
                 if(state.isBoss) setTimeout(openRelicSelection, 1000); else setTimeout(nextStage, 1000);
             } else { setTimeout(enemyTurn, 800); }
         }
-
         function enemyTurn() {
             if(state.enemyHp <= 0) return; if(state.relics.includes('dodge') && Math.random() < 0.15) { showToast("GLITCH", "#aaa"); state.turn = 'player'; toggleButtons(true); return; }
             const cls = CLASS_STATS[state.currentClass]; let dmg = (8 + Math.floor(state.stage * 1.8)) * (state.isBoss ? 1.5 : 1); if(cls.defBonus) dmg = Math.max(1, dmg - cls.defBonus); state.hp -= dmg;
             if(state.relics.includes('thorns')) { let reflect = Math.ceil(dmg*0.2); state.enemyHp -= reflect; showToast(`Reflete ${reflect}`, "#ff4444"); if(state.enemyHp <= 0) { dealDamage(0); return; } }
-            spawnParticles(width*0.25, height*0.6, '#ff0000', 20); screenShake(20); updateHUD(); if(state.hp <= 0) gameOver(); else { state.turn = 'player'; toggleButtons(true); }
+            spawnParticles(width*0.25, height*0.75, '#ff0000', 20); screenShake(20); updateHUD(); if(state.hp <= 0) gameOver(); else { state.turn = 'player'; toggleButtons(true); }
         }
-
         function nextStage() { state.stage++; state.mp = Math.min(state.maxMp, state.mp + Math.floor(state.maxMp * 0.25)); updateHUD(); checkStory(); }
-
         function openRelicSelection() {
             const options = []; let pool = [...RELIC_DEX]; while(options.length < 3 && pool.length > 0) { let idx = Math.floor(Math.random() * pool.length); let r = pool.splice(idx, 1)[0]; if(!state.relics.includes(r.id)) options.push(r); }
             if(options.length === 0) { nextStage(); return; }
@@ -327,7 +280,6 @@
             options.forEach(r => { const div = document.createElement('div'); div.className = 'relic-card'; div.innerHTML = `<div class="relic-icon">${r.icon}</div><div class="relic-info"><h3>${r.name}</h3><p>${r.desc}</p></div>`; div.onclick = () => { state.relics.push(r.id); SFX.relic(); document.getElementById('relic-overlay').style.display='none'; document.getElementById('game-ui').style.display='flex'; nextStage(); }; container.appendChild(div); });
             document.getElementById('game-ui').style.display = 'none'; document.getElementById('relic-overlay').style.display = 'flex';
         }
-
         function gameOver() { saveData.essence += state.runEssence; saveGame(); document.getElementById('game-ui').style.display = 'none'; document.getElementById('shop-overlay').style.display = 'flex'; updateShopUI(); }
         function updateShopUI() { document.getElementById('shop-essence-val').innerText = saveData.essence; ['atk', 'hp', 'mp', 'crit'].forEach(s => { const cost = 10 * (saveData.skills[s] + 1); document.getElementById(`lvl-${s}`).innerText = saveData.skills[s]; const btn = document.getElementById(`buy-${s}`); btn.innerText = `Custo: ${cost}`; if(saveData.essence >= cost) { btn.classList.add('can-buy'); btn.disabled = false; } else { btn.classList.remove('can-buy'); btn.disabled = true; } }); }
         function buyUpgrade(type) { const cost = 10 * (saveData.skills[type] + 1); if(saveData.essence >= cost) { saveData.essence -= cost; saveData.skills[type]++; saveGame(); updateShopUI(); } }
@@ -341,12 +293,68 @@
         function updateHUD() { document.getElementById('hp-bar').style.width = (state.hp/state.maxHp*100)+'%'; document.getElementById('mp-bar').style.width = (state.mp/state.maxMp*100)+'%'; document.getElementById('stage-val').innerText = state.stage; document.getElementById('essence-val').innerText = state.runEssence; document.getElementById('relic-count').innerText = state.relics.length; const magBtn = document.getElementById('btn-mag'); if(state.mp < 15) magBtn.classList.add('low-mana'); else magBtn.classList.remove('low-mana'); }
 
         function drawGame(time) {
+            // BACKGROUND & PERSPECTIVE
             ctx.fillStyle = '#050505'; ctx.fillRect(0,0,width,height);
-            if(state.stage <= 5) { ctx.fillStyle='#00ff00'; state.bgProps.forEach(p=>{ p.y+=p.speed; if(p.y>height)p.y=0; if(Math.random()>0.98)ctx.fillRect(p.x,p.y,2,6); }); } else if(state.stage <= 10) { ctx.fillStyle='rgba(255,100,0,0.5)'; state.bgProps.forEach(p=>{ p.y-=p.speed; if(p.y<0)p.y=height; ctx.beginPath(); ctx.arc(p.x,p.y,p.val*3,0,Math.PI*2); ctx.fill(); }); } else { ctx.fillStyle='#fff'; state.bgProps.forEach(p=>{ p.x+=(p.x-width/2)*0.01; p.y+=(p.y-height/2)*0.01; if(p.x<0||p.x>width)p.x=Math.random()*width; ctx.fillRect(p.x,p.y,2,2); }); }
+            let horizon = height * 0.4;
+            let floorColor = state.stage <= 5 ? '#003300' : (state.stage <= 10 ? '#331100' : '#110033');
+            let gridColor = state.stage <= 5 ? '#00ff00' : (state.stage <= 10 ? '#ff4400' : '#aa00ff');
+            
+            ctx.fillStyle = '#000'; ctx.fillRect(0,0,width,horizon);
+            
+            ctx.save(); ctx.beginPath(); ctx.rect(0, horizon, width, height-horizon); ctx.clip();
+            ctx.strokeStyle = gridColor; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+            
+            for(let i=-20; i<=20; i++) { let x1 = width/2 + i * 40; let x2 = width/2 + i * 200; ctx.beginPath(); ctx.moveTo(x1, horizon); ctx.lineTo(x2, height); ctx.stroke(); }
+            let offset = (Date.now() / 5) % 50;
+            for(let i=0; i<20; i++) { let y = horizon + (i * 30 + offset); if(y < height) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); } }
+            ctx.restore(); ctx.globalAlpha = 1.0;
+
             ctx.save(); if(state.shake>0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake*=0.9; if(state.shake<0.5)state.shake=0; }
-            const cls = CLASS_STATS[state.currentClass]; const px = width*0.25; const py = height*0.6 + Math.sin(time/500)*10;
-            ctx.shadowBlur=20; ctx.shadowColor=cls.color; ctx.fillStyle=cls.color; ctx.beginPath(); ctx.arc(px,py,30,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=`rgba(255,255,255,0.3)`; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(px,py,45+Math.sin(time/200)*5,0,Math.PI*2); ctx.stroke();
-            if(state.enemyHp > 0 && document.getElementById('dialogue-overlay').style.display === 'none') { const ex = width*0.75; const ey = height*0.6; const hpPct = state.enemyHp/state.enemyMaxHp; const bossColor = state.isBoss ? '#b026ff' : '#ff4444'; ctx.shadowBlur=30; ctx.shadowColor=bossColor; ctx.fillStyle=hpPct>0.5?bossColor:'#550000'; const size = (state.isBoss?120:80) + Math.sin(time/300)*5; ctx.save(); ctx.translate(ex,ey); ctx.rotate(Math.sin(time/1000)*0.1); if(state.isBoss) { ctx.beginPath(); for(let i=0; i<6; i++) ctx.lineTo(size*Math.cos(i*Math.PI/3), size*Math.sin(i*Math.PI/3)); ctx.fill(); } else { ctx.fillRect(-size/2,-size/2,size,size); } ctx.restore(); ctx.shadowBlur=0; ctx.fillStyle='#333'; ctx.fillRect(ex-50,ey-size-20,100,8); ctx.fillStyle=bossColor; ctx.fillRect(ex-50,ey-size-20,100*hpPct,8); }
+            
+            // PLAYER
+            const cls = CLASS_STATS[state.currentClass];
+            const px = width*0.25; const py = height*0.75;
+            
+            ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(px, py+35, 40, 10, 0, 0, Math.PI*2); ctx.fill(); // Shadow
+            
+            // Draw Player Sprite or Fallback
+            if(playerSprite.complete && playerSprite.naturalWidth > 0) {
+                const size = 100;
+                ctx.shadowBlur=20; ctx.shadowColor=cls.color; 
+                ctx.drawImage(playerSprite, px - size/2, py - size/2, size, size);
+                ctx.shadowBlur=0;
+            } else {
+                ctx.shadowBlur=20; ctx.shadowColor=cls.color; ctx.fillStyle=cls.color; ctx.beginPath(); ctx.arc(px,py,30,0,Math.PI*2); ctx.fill(); 
+                ctx.strokeStyle=`rgba(255,255,255,0.3)`; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(px,py,45+Math.sin(time/200)*5,0,Math.PI*2); ctx.stroke();
+            }
+
+            // ENEMY
+            if(state.enemyHp > 0 && document.getElementById('dialogue-overlay').style.display === 'none') {
+                const ex = width*0.75; const ey = height*0.45;
+                const hpPct = state.enemyHp/state.enemyMaxHp;
+                const bossColor = state.isBoss ? '#b026ff' : '#ff4444';
+                
+                ctx.shadowBlur=0; ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(ex, ey + (state.isBoss?100:60), (state.isBoss?80:50), 10, 0, 0, Math.PI*2); ctx.fill();
+
+                const size = (state.isBoss?120:80) + Math.sin(time/300)*5;
+                const scaleFactor = 0.7; // Perspective
+                
+                ctx.save(); ctx.translate(ex,ey); ctx.scale(scaleFactor, scaleFactor);
+                
+                if(enemySprite.complete && enemySprite.naturalWidth > 0) {
+                    let spriteSize = state.isBoss ? 200 : 150;
+                    ctx.shadowBlur=30; ctx.shadowColor=bossColor;
+                    ctx.drawImage(enemySprite, -spriteSize/2, -spriteSize/2, spriteSize, spriteSize);
+                } else {
+                    // Fallback
+                    ctx.shadowBlur=30; ctx.shadowColor=bossColor; ctx.fillStyle=hpPct>0.5?bossColor:'#550000';
+                    ctx.rotate(Math.sin(time/1000)*0.1);
+                    if(state.isBoss) { ctx.beginPath(); for(let i=0; i<6; i++) ctx.lineTo(size*Math.cos(i*Math.PI/3), size*Math.sin(i*Math.PI/3)); ctx.fill(); } else { ctx.fillRect(-size/2,-size/2,size,size); } 
+                }
+                
+                ctx.restore();
+                ctx.shadowBlur=0; ctx.fillStyle='#333'; ctx.fillRect(ex-40,ey-size*0.5-20,80,6); ctx.fillStyle=bossColor; ctx.fillRect(ex-40,ey-size*0.5-20,80*hpPct,6);
+            }
             state.particles.forEach((p,i)=>{ p.update(); p.draw(ctx); if(p.life<=0)state.particles.splice(i,1); }); ctx.restore(); gameLoopId = requestAnimationFrame(() => drawGame(Date.now()));
         }
     </script>
