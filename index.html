@@ -3,324 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RPG Neon Ultimate</title>
+    <title>Neon RPG: Story Mode</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap'); /* Fonte para texto */
+
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #050505; overflow: hidden; font-family: 'Orbitron', sans-serif; height: 100vh; width: 100vw; }
+        body { background-color: #050505; overflow: hidden; font-family: 'Orbitron', sans-serif; height: 100vh; width: 100vw; color: white; }
         canvas { display: block; width: 100%; height: 100%; }
         
-        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; }
+        /* UI GERAL */
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; z-index: 5; }
         
-        /* Topo */
+        /* HUD TOPO */
         .hud-top { width: 100%; max-width: 400px; margin: 0 auto; pointer-events: auto; display: flex; justify-content: space-between; align-items: flex-start; }
-        .bars-area { width: 70%; }
-        .level-area { width: 25%; text-align: center; background: rgba(50,50,50,0.8); border: 1px solid #fff; border-radius: 8px; padding: 5px; color: #ffD700; text-shadow: 0 0 10px #ffD700; }
-        .level-text { font-size: 10px; display: block; }
-        .level-num { font-size: 24px; font-weight: bold; }
-
+        .bars-area { width: 65%; }
+        .stats-area { width: 30%; text-align: right; font-size: 12px; }
+        .essence-box { color: #b026ff; font-weight: bold; font-size: 16px; margin-bottom: 5px; text-shadow: 0 0 10px #b026ff; }
+        
         .bar-container { margin-bottom: 8px; }
-        .bar-label { color: #fff; font-size: 12px; margin-bottom: 2px; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-        .bar-bg { width: 100%; height: 10px; background: rgba(30, 30, 30, 0.8); border: 1px solid #444; border-radius: 5px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .bar-bg { width: 100%; height: 8px; background: rgba(50,50,50,0.5); border: 1px solid #444; border-radius: 4px; overflow: hidden; }
         .bar-fill { height: 100%; width: 100%; transition: width 0.3s ease-out; }
         .hp { background: linear-gradient(90deg, #ff4444, #ff0000); box-shadow: 0 0 10px #ff0000; }
         .mp { background: linear-gradient(90deg, #44ccff, #0088ff); box-shadow: 0 0 10px #0088ff; }
         
-        /* Botões */
-        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; pointer-events: auto; margin-bottom: 20px; }
-        .btn { background: rgba(20, 20, 20, 0.9); border: 2px solid #333; color: white; padding: 20px 0; border-radius: 12px; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 14px; cursor: pointer; transition: all 0.1s; backdrop-filter: blur(5px); text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+        /* CONTROLES */
+        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; pointer-events: auto; margin-bottom: 10px; transition: opacity 0.3s; }
+        .btn { background: rgba(20, 20, 20, 0.95); border: 2px solid #333; color: white; padding: 15px 0; border-radius: 10px; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 14px; cursor: pointer; backdrop-filter: blur(5px); }
         .btn:active { transform: scale(0.95); }
-        .btn-atk { border-color: #ff4444; box-shadow: 0 0 15px rgba(255, 68, 68, 0.2); }
-        .btn-mag { border-color: #44ccff; box-shadow: 0 0 15px rgba(68, 204, 255, 0.2); }
-        .btn-pot { border-color: #44ff44; box-shadow: 0 0 15px rgba(68, 255, 68, 0.2); }
-        
-        /* Start Screen */
-        #start-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: auto; }
-        #start-btn { font-size: 24px; padding: 20px 40px; background: #00ff00; border: none; border-radius: 10px; cursor: pointer; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% {transform: scale(1);} 50% {transform: scale(1.05);} 100% {transform: scale(1);} }
+        .btn-atk { border-color: #ff4444; }
+        .btn-mag { border-color: #44ccff; }
+        .btn-pot { border-color: #44ff44; }
 
-        .toast { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold; color: #fff; text-shadow: 0 0 10px #fff; opacity: 0; transition: opacity 0.5s, transform 0.5s; }
+        /* CAIXA DE DIÁLOGO (NOVA) */
+        #dialogue-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 40%;
+            background: linear-gradient(to top, #000 80%, transparent);
+            display: none; flex-direction: column; justify-content: flex-end; padding: 20px;
+            pointer-events: auto; z-index: 15;
+        }
+        .dialogue-box {
+            background: rgba(10, 10, 20, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from {transform: translateY(100%);} to {transform: translateY(0);} }
+        
+        .char-name { color: #00ffff; font-size: 14px; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+        .dialogue-text { font-family: 'Roboto Mono', monospace; font-size: 14px; line-height: 1.5; color: #eee; min-height: 60px; }
+        .next-btn { background: #00ffff; color: #000; border: none; padding: 10px 20px; font-weight: bold; margin-top: 10px; width: 100%; cursor: pointer; font-family: 'Orbitron'; text-transform: uppercase; }
+        
+        /* LOJA SKILL TREE */
+        #shop-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 20; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; pointer-events: auto; }
+        .shop-header { text-align: center; margin-bottom: 20px; }
+        .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; margin-bottom: 20px; }
+        .skill-card { background: #1a1a1a; border: 1px solid #444; padding: 15px; border-radius: 10px; text-align: center; }
+        .buy-btn { width: 100%; margin-top: 10px; padding: 8px; background: #333; border: 1px solid #555; color: white; border-radius: 5px; cursor: pointer; }
+        .buy-btn.can-buy { background: #b026ff; color: black; font-weight: bold; animation: glow 2s infinite; }
+        @keyframes glow { 0%{box-shadow:0 0 5px #b026ff;} 50%{box-shadow:0 0 15px #b026ff;} 100%{box-shadow:0 0 5px #b026ff;} }
+        #restart-btn { width: 100%; max-width: 300px; padding: 15px; background: #ff4444; border: none; font-family: 'Orbitron'; font-size: 18px; font-weight: bold; color: black; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+
+        /* Start Screen */
+        #start-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; z-index: 30; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: auto; }
+        #start-btn { font-size: 20px; padding: 20px 40px; background: #00ff00; border: none; border-radius: 8px; font-weight: bold; }
+        .toast { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold; color: #fff; text-shadow: 0 0 10px #fff; opacity: 0; transition: opacity 0.5s, transform 0.5s; z-index: 10; }
         .toast.show { opacity: 1; transform: translate(-50%, -80%); }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
-    
+
     <div id="start-overlay">
-        <h1 style="color:white; margin-bottom:20px; text-shadow: 0 0 20px cyan;">NEON RPG</h1>
-        <button id="start-btn">TAP TO START</button>
-        <p style="color:#aaa; margin-top:10px;">(Ativa o áudio)</p>
+        <h1 style="color:white; margin-bottom:20px; text-shadow: 0 0 20px cyan;">NEON ROGUE</h1>
+        <p style="color:#888; margin-bottom:20px;">Chapter 1: The Awakening</p>
+        <button id="start-btn">INICIAR JORNADA</button>
     </div>
 
-    <div class="ui-layer">
+    <div class="ui-layer" id="game-ui">
         <div class="hud-top">
             <div class="bars-area">
-                <div class="bar-container"><div class="bar-label">HP <span id="hp-val">100</span></div><div class="bar-bg"><div id="hp-bar" class="bar-fill hp"></div></div></div>
-                <div class="bar-container"><div class="bar-label">MP <span id="mp-val">50</span></div><div class="bar-bg"><div id="mp-bar" class="bar-fill mp"></div></div></div>
+                <div class="bar-container"><div class="bar-bg"><div id="hp-bar" class="bar-fill hp"></div></div></div>
+                <div class="bar-container"><div class="bar-bg"><div id="mp-bar" class="bar-fill mp"></div></div></div>
             </div>
-            <div class="level-area">
-                <span class="level-text">STAGE</span>
-                <span class="level-num" id="stage-val">1</span>
+            <div class="stats-area">
+                <div class="essence-box">🟣 <span id="essence-val">0</span></div>
+                <div>STAGE <span id="stage-val">1</span></div>
             </div>
         </div>
-        <div id="toast-msg" class="toast hidden">Crítico!</div>
-        <div class="controls">
+        <div id="toast-msg" class="toast hidden"></div>
+        
+        <div class="controls" id="controls-area">
             <button class="btn btn-atk" id="btn-atk">⚔️ ATK</button>
             <button class="btn btn-mag" id="btn-mag">✨ MAG</button>
             <button class="btn btn-pot" id="btn-pot">🧪 POT</button>
         </div>
     </div>
 
+    <div id="dialogue-overlay">
+        <div class="dialogue-box">
+            <div class="char-name">SYSTEM_LOG</div>
+            <div class="dialogue-text" id="story-text">...</div>
+            <button class="next-btn" onclick="finishDialogue()">PROSSEGUIR >></button>
+        </div>
+    </div>
+
+    <div id="shop-overlay">
+        <div class="shop-header">
+            <h1 style="color:#ff4444">FALHA NO SISTEMA</h1>
+            <p>Reconstrua seu código com Essência.</p>
+            <div style="font-size:24px; color:#b026ff; margin-top:10px;">🟣 <span id="shop-essence-val">0</span></div>
+        </div>
+        <div class="skill-grid">
+            <div class="skill-card"><span style="font-size:24px">⚔️</span><div>FORÇA</div><div style="color:#aaa">Lvl <span id="lvl-atk">0</span></div><button class="buy-btn" id="buy-atk" onclick="buyUpgrade('atk')">Cust: 10</button></div>
+            <div class="skill-card"><span style="font-size:24px">❤️</span><div>VITALIDADE</div><div style="color:#aaa">Lvl <span id="lvl-hp">0</span></div><button class="buy-btn" id="buy-hp" onclick="buyUpgrade('hp')">Cust: 10</button></div>
+            <div class="skill-card"><span style="font-size:24px">✨</span><div>MISTICISMO</div><div style="color:#aaa">Lvl <span id="lvl-mp">0</span></div><button class="buy-btn" id="buy-mp" onclick="buyUpgrade('mp')">Cust: 10</button></div>
+            <div class="skill-card"><span style="font-size:24px">🍀</span><div>SORTE</div><div style="color:#aaa">Lvl <span id="lvl-crit">0</span></div><button class="buy-btn" id="buy-crit" onclick="buyUpgrade('crit')">Cust: 10</button></div>
+        </div>
+        <button id="restart-btn" onclick="restartRun()">REINICIAR PROTOCOLO</button>
+    </div>
+
     <script>
-        // --- SISTEMA DE ÁUDIO (Sintetizador Web Audio API) ---
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        let audioCtx;
-
-        function initAudio() {
-            if (!audioCtx) audioCtx = new AudioContext();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-
-        function playTone(freq, type, duration) {
-            if(!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type; // 'sine', 'square', 'sawtooth', 'triangle'
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            
-            // Volume cai gradualmente (efeito de percussão)
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
-        }
-
-        const SFX = {
-            hit: () => { playTone(150, 'sawtooth', 0.1); playTone(100, 'square', 0.15); }, // Som de soco
-            magic: () => { playTone(600, 'sine', 0.1); playTone(1200, 'triangle', 0.3); }, // Brilho
-            heal: () => { playTone(300, 'sine', 0.1); playTone(500, 'sine', 0.2); playTone(800, 'sine', 0.4); }, // Subida
-            enemyHit: () => { playTone(80, 'square', 0.1); },
-            bossSpawn: () => { playTone(50, 'sawtooth', 1.0); playTone(40, 'square', 1.0); } // Grave e longo
+        // --- LORE / HISTÓRIA (EDITE AQUI PAULO!) ---
+        const LORE = {
+            1: "Inicializando sistema... Erro crítico detectado. Entidades hostis encontradas no setor de memória.",
+            2: "Esses programas menores... são apenas o começo. Algo está corrompendo os dados.",
+            5: "AVISO: Guardião do Setor detectado. Nível de ameaça: ALTO.",
+            6: "O Guardião caiu, mas deixou cair um código estranho. Continuando a varredura.",
+            10: "Detectando anomalia massiva. O Núcleo do sistema está próximo.",
+            11: "Incrível. Você sobreviveu. Mas o sistema é infinito..."
         };
 
-        // --- MOTOR GRÁFICO ---
+        // --- SISTEMA DE SAVE ---
+        const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, crit: 0 } };
+        let saveData = JSON.parse(localStorage.getItem('neonRpgSaveV2')) || DEFAULT_SAVE;
+        function saveGame() { localStorage.setItem('neonRpgSaveV2', JSON.stringify(saveData)); }
+
+        // --- AUDIO ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+        function playTone(freq, type, duration, vol=0.1) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        }
+        const SFX = { hit: ()=>playTone(150,'sawtooth',0.1), magic: ()=>playTone(600,'sine',0.2), heal: ()=>playTone(400,'sine',0.2), coin: ()=>playTone(1000,'square',0.1,0.05), type: ()=>playTone(800,'square',0.05,0.02) };
+
+        // --- GAME ENGINE ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let width, height;
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
 
-        // Estado do Jogo
-        const state = { 
-            turn: 'player', 
-            stage: 1,
-            hp: 100, maxHp: 100, 
-            mp: 50, maxMp: 50, 
-            enemyHp: 100, enemyMaxHp: 100, 
-            isBoss: false,
-            particles: [], shake: 0 
-        };
+        let state = { turn: 'player', stage: 1, hp: 0, maxHp: 0, mp: 0, maxMp: 0, enemyHp: 0, enemyMaxHp: 0, isBoss: false, particles: [], shake: 0, runEssence: 0 };
 
-        // Sistema de Partículas
+        function initStats() {
+            state.maxHp = 100 + (saveData.skills.hp * 20); state.hp = state.maxHp;
+            state.maxMp = 50 + (saveData.skills.mp * 15); state.mp = state.maxMp;
+            state.stage = 1; state.runEssence = 0; state.turn = 'player';
+            updateHUD();
+            checkStory(); // Começa verificando se tem história no nível 1
+        }
+
+        // --- SISTEMA DE HISTÓRIA ---
+        function checkStory() {
+            // Se existe texto para este estágio, mostra. Se não, começa batalha.
+            if (LORE[state.stage]) {
+                document.getElementById('story-text').innerText = LORE[state.stage];
+                document.getElementById('dialogue-overlay').style.display = 'flex';
+                document.getElementById('controls-area').style.opacity = '0'; // Esconde controles
+                SFX.type();
+            } else {
+                startBattle();
+            }
+        }
+
+        function finishDialogue() {
+            document.getElementById('dialogue-overlay').style.display = 'none';
+            document.getElementById('controls-area').style.opacity = '1';
+            startBattle();
+        }
+
+        function startBattle() {
+            state.isBoss = (state.stage % 5 === 0);
+            state.enemyMaxHp = 100 + (state.stage * 15);
+            if(state.isBoss) state.enemyMaxHp *= 2;
+            state.enemyHp = state.enemyMaxHp;
+            state.turn = 'player';
+        }
+
+        // --- GRAFICOS ---
         class Particle {
             constructor(x, y, color, speed, size) {
                 this.x = x; this.y = y; this.color = color; this.size = size;
-                this.vx = (Math.random() - 0.5) * speed; this.vy = (Math.random() - 0.5) * speed; 
-                this.life = 1.0;
+                this.vx = (Math.random() - 0.5) * speed; this.vy = (Math.random() - 0.5) * speed; this.life = 1.0;
             }
             update() { this.x += this.vx; this.y += this.vy; this.life -= 0.03; }
-            draw(ctx) { 
-                ctx.globalAlpha = Math.max(0, this.life); 
-                ctx.fillStyle = this.color; 
-                ctx.beginPath(); 
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); 
-                ctx.fill(); 
-                ctx.globalAlpha = 1.0; 
-            }
+            draw(ctx) { ctx.globalAlpha = Math.max(0, this.life); ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1.0; }
         }
         function spawnParticles(x, y, color, count) { for(let i=0; i<count; i++) state.particles.push(new Particle(x, y, color, 15, Math.random() * 4 + 1)); }
         function screenShake(amount) { state.shake = amount; }
 
-        // --- DESENHAR INIMIGOS (VARIEDADE) ---
-        function drawEnemy(x, y, time) {
-            const hpPct = state.enemyHp / state.enemyMaxHp;
-            // Cores: Chefe é Roxo/Ouro, Normal é Vermelho
-            const mainColor = state.isBoss ? '#b026ff' : (hpPct > 0.5 ? '#ff4444' : '#550000'); 
-            const eyeColor = state.isBoss ? '#ffd700' : '#ffff00';
-            const sizeBase = state.isBoss ? 120 : 80;
-
-            ctx.shadowBlur = state.isBoss ? 50 : 30; 
-            ctx.shadowColor = mainColor; 
-            ctx.fillStyle = mainColor;
-            
-            const scale = 1 + Math.sin(time / (state.isBoss ? 150 : 300)) * 0.05; 
-            const size = sizeBase * scale;
-
-            ctx.save(); 
-            ctx.translate(x, y); 
-            ctx.rotate(Math.sin(time / 1000) * 0.1);
-
-            // DESENHA FORMA BASEADA NO ESTÁGIO
-            ctx.beginPath();
-            if (state.isBoss) {
-                // Hexágono (Boss)
-                for (let i = 0; i < 6; i++) {
-                    ctx.lineTo(size * Math.cos(i * Math.PI / 3), size * Math.sin(i * Math.PI / 3));
-                }
-            } else if (state.stage % 3 === 2) {
-                // Triângulo (Rápido)
-                ctx.moveTo(0, -size/1.5); ctx.lineTo(size/1.5, size/1.5); ctx.lineTo(-size/1.5, size/1.5);
-            } else {
-                // Quadrado (Padrão)
-                ctx.rect(-size/2, -size/2, size, size);
-            }
-            ctx.fill();
-
-            // Olhos
-            ctx.shadowBlur = 10; ctx.shadowColor = eyeColor; ctx.fillStyle = eyeColor;
-            ctx.beginPath(); ctx.arc(-20, -10, state.isBoss ? 10 : 5, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(20, -10, state.isBoss ? 10 : 5, 0, Math.PI*2); ctx.fill();
-            ctx.restore();
-
-            // Barra de vida
-            ctx.shadowBlur = 0; ctx.fillStyle = '#333'; ctx.fillRect(x - 50, y - size - 20, 100, 10);
-            ctx.fillStyle = mainColor; ctx.fillRect(x - 50, y - size - 20, 100 * hpPct, 10);
-            
-            if(state.isBoss) {
-                ctx.fillStyle = "#ffd700"; ctx.font = "12px Orbitron"; ctx.fillText("BOSS", x-15, y - size - 25);
-            }
-        }
-
-        function drawPlayer(x, y, time) {
-            ctx.shadowBlur = 20; ctx.shadowColor = '#00ffff'; ctx.fillStyle = '#00ffff';
-            const floatY = Math.sin(time / 500) * 10;
-            ctx.beginPath(); ctx.arc(x, y + floatY, 30, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#000'; ctx.fillRect(x + 5, y + floatY - 5, 20, 8); // Visor
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y + floatY, 45 + Math.sin(time / 200)*5, 0, Math.PI * 2); ctx.stroke();
-        }
-
-        // Loop Visual
-        function loop() {
-            // Fundo muda levemente no Boss
-            ctx.fillStyle = state.isBoss ? '#1a051a' : '#111'; 
-            ctx.fillRect(0, 0, width, height);
-            
+        function drawGame(time) {
+            ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, width, height);
             ctx.save();
-            if (state.shake > 0) {
-                ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); 
-                state.shake *= 0.9; if(state.shake < 0.5) state.shake = 0;
+            if (state.shake > 0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake *= 0.9; if(state.shake < 0.5) state.shake = 0; }
+            
+            // Player
+            const py = height * 0.6 + Math.sin(time / 500) * 10;
+            const px = width * 0.25;
+            ctx.shadowBlur = 20; ctx.shadowColor = '#00ffff'; ctx.fillStyle = '#00ffff';
+            ctx.beginPath(); ctx.arc(px, py, 30, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(px, py, 45 + Math.sin(time/200)*5, 0, Math.PI*2); ctx.stroke();
+
+            // Enemy
+            if (state.enemyHp > 0 && document.getElementById('dialogue-overlay').style.display === 'none') {
+                const ey = height * 0.6; const ex = width * 0.75;
+                const hpPct = state.enemyHp / state.enemyMaxHp;
+                const bossColor = state.isBoss ? '#b026ff' : '#ff4444';
+                
+                ctx.shadowBlur = 30; ctx.shadowColor = bossColor; ctx.fillStyle = hpPct > 0.5 ? bossColor : '#550000';
+                const size = (state.isBoss ? 120 : 80) + Math.sin(time/300)*5;
+                
+                ctx.save(); ctx.translate(ex, ey); ctx.rotate(Math.sin(time/1000)*0.1);
+                
+                // Desenha Boss (Hexagono) ou Normal (Quadrado)
+                if(state.isBoss) {
+                    ctx.beginPath(); for (let i = 0; i < 6; i++) ctx.lineTo(size * Math.cos(i * Math.PI / 3), size * Math.sin(i * Math.PI / 3)); ctx.fill();
+                } else {
+                    ctx.fillRect(-size/2, -size/2, size, size);
+                }
+                
+                ctx.fillStyle = '#ffff00'; ctx.shadowBlur=10; 
+                ctx.beginPath(); ctx.arc(-20, -10, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(20, -10, 5, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+
+                // Barra HP Inimigo
+                ctx.shadowBlur=0; ctx.fillStyle='#333'; ctx.fillRect(ex-50, ey-size-20, 100, 8);
+                ctx.fillStyle=bossColor; ctx.fillRect(ex-50, ey-size-20, 100*hpPct, 8);
             }
-            const time = Date.now();
-            drawPlayer(width * 0.25, height * 0.6, time);
-            if (state.enemyHp > 0) drawEnemy(width * 0.75, height * 0.6, time);
-            state.particles.forEach((p, index) => { p.update(); p.draw(ctx); if (p.life <= 0) state.particles.splice(index, 1); });
-            ctx.restore();
-            requestAnimationFrame(loop);
+
+            state.particles.forEach((p, idx) => { p.update(); p.draw(ctx); if(p.life <= 0) state.particles.splice(idx,1); });
+            ctx.restore(); requestAnimationFrame(() => drawGame(Date.now()));
         }
 
-        // --- LÓGICA DE JOGO ---
-        function showToast(msg, color='#fff') { 
-            const el = document.getElementById('toast-msg'); 
-            el.innerText = msg; el.style.color = color; el.style.textShadow = `0 0 10px ${color}`;
-            el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 1500); 
-        }
-
+        // --- COMBATE ---
         function updateHUD() {
             document.getElementById('hp-bar').style.width = (state.hp / state.maxHp * 100) + '%';
             document.getElementById('mp-bar').style.width = (state.mp / state.maxMp * 100) + '%';
-            document.getElementById('hp-val').innerText = Math.floor(state.hp);
-            document.getElementById('mp-val').innerText = Math.floor(state.mp);
             document.getElementById('stage-val').innerText = state.stage;
+            document.getElementById('essence-val').innerText = state.runEssence;
         }
 
-        function nextEnemy() {
-            state.stage++;
-            state.isBoss = (state.stage % 5 === 0); // Chefe a cada 5 fases
-            
-            // Dificuldade Escalonada
-            const scale = state.stage * 0.2;
-            state.enemyMaxHp = Math.floor(100 + (100 * scale));
-            if(state.isBoss) state.enemyMaxHp *= 2.5; // Boss tem muito mais vida
-            
-            state.enemyHp = state.enemyMaxHp;
-            
-            if(state.isBoss) {
-                SFX.bossSpawn();
-                showToast("⚠️ BOSS ALERT ⚠️", "#ff00ff");
-                screenShake(50);
-            } else {
-                showToast(`Stage ${state.stage}`);
-            }
-            state.turn = 'player';
-            updateHUD();
-        }
-
-        // Controles
         document.getElementById('btn-atk').addEventListener('click', () => {
             if (state.turn !== 'player') return;
-            state.turn = 'anim'; SFX.hit();
-            spawnParticles(width * 0.75, height * 0.6, '#ffaa00', 30); screenShake(15);
-            
-            let dmg = 15 + Math.floor(Math.random() * 5) + (state.stage * 2);
-            // Crítico
-            if(Math.random() < 0.2) { dmg *= 2; showToast("CRÍTICO!", "#ffcc00"); screenShake(30); }
-            
-            state.enemyHp -= dmg; 
-            
-            if(state.enemyHp <= 0) {
-                SFX.enemyHit();
-                state.enemyHp = 0; spawnParticles(width * 0.75, height * 0.6, state.isBoss ? '#b026ff' : '#ff0000', 100);
-                setTimeout(() => nextEnemy(), 1500);
-            } else { setTimeout(enemyTurn, 800); }
+            state.turn = 'anim'; SFX.hit(); spawnParticles(width * 0.75, height * 0.6, '#ffaa00', 30); screenShake(15);
+            let dmg = (15 + (saveData.skills.atk * 5)) + Math.floor(Math.random() * 5);
+            let critChance = 0.05 + (saveData.skills.crit * 0.02);
+            if(Math.random() < critChance) { dmg *= 2; showToast("CRÍTICO!", "#ffcc00"); screenShake(30); } else { showToast(dmg); }
+            dealDamage(dmg);
         });
 
         document.getElementById('btn-mag').addEventListener('click', () => {
             if (state.turn !== 'player' || state.mp < 15) return;
-            state.mp -= 15; updateHUD(); SFX.magic();
-            spawnParticles(width * 0.75, height * 0.6, '#00ffff', 60); screenShake(10);
-            
-            const dmg = 40 + (state.stage * 3);
-            state.enemyHp -= dmg;
-            
-            if(state.enemyHp <= 0) {
-                state.enemyHp = 0; spawnParticles(width * 0.75, height * 0.6, '#00ffff', 100);
-                setTimeout(() => nextEnemy(), 1500);
-            } else { setTimeout(enemyTurn, 800); }
+            state.mp -= 15; updateHUD(); SFX.magic(); spawnParticles(width * 0.75, height * 0.6, '#00ffff', 50); screenShake(10);
+            dealDamage(40 + (saveData.skills.atk * 8));
         });
 
         document.getElementById('btn-pot').addEventListener('click', () => {
             if (state.turn !== 'player') return;
-            SFX.heal();
-            state.hp = Math.min(state.maxHp, state.hp + 50); 
-            state.mp = Math.min(state.maxMp, state.mp + 20);
-            spawnParticles(width * 0.25, height * 0.6, '#00ff00', 30); updateHUD(); 
-            showToast("Recuperado!", "#00ff00");
-            state.turn = 'anim'; setTimeout(enemyTurn, 1000);
+            SFX.heal(); state.hp = Math.min(state.maxHp, state.hp + (40 + (saveData.skills.hp * 5)));
+            spawnParticles(width * 0.25, height * 0.6, '#00ff00', 30); updateHUD(); showToast("Cura!", "#00ff00");
+            setTimeout(enemyTurn, 800);
         });
 
-        function enemyTurn() {
-            state.turn = 'enemy'; 
-            screenShake(state.isBoss ? 40 : 20); 
-            SFX.enemyHit();
-            spawnParticles(width * 0.25, height * 0.6, '#ff0000', 20);
-            
-            let dmg = (10 + state.stage) * (state.isBoss ? 1.5 : 1);
-            state.hp -= dmg; updateHUD();
-            
-            if (state.hp <= 0) { 
-                setTimeout(() => { alert(`GAME OVER! Você chegou na fase ${state.stage}`); location.reload(); }, 100); 
-            } else { state.turn = 'player'; }
+        function dealDamage(amount) {
+            state.enemyHp -= amount;
+            if(state.enemyHp <= 0) {
+                state.enemyHp = 0;
+                spawnParticles(width * 0.75, height * 0.6, '#b026ff', 80); SFX.coin();
+                let essenceGain = 5 + Math.floor(state.stage * 1.5);
+                if(state.isBoss) essenceGain *= 5;
+                state.runEssence += essenceGain;
+                showToast(`+${essenceGain} Essence`, "#b026ff");
+                setTimeout(nextStage, 1500);
+            } else { setTimeout(enemyTurn, 800); }
         }
 
-        // Início
+        function enemyTurn() {
+            state.turn = 'enemy';
+            const dmg = (8 + Math.floor(state.stage * 1.5)) * (state.isBoss ? 1.5 : 1);
+            state.hp -= dmg; spawnParticles(width * 0.25, height * 0.6, '#ff0000', 20); screenShake(20); updateHUD();
+            if(state.hp <= 0) gameOver(); else state.turn = 'player';
+        }
+
+        function nextStage() {
+            state.stage++;
+            updateHUD();
+            checkStory(); // CHECA SE TEM HISTÓRIA ANTES DE SPAWNAR
+        }
+
+        // --- LOJA ---
+        function gameOver() {
+            saveData.essence += state.runEssence; saveGame();
+            document.getElementById('game-ui').style.display = 'none';
+            document.getElementById('shop-overlay').style.display = 'flex';
+            updateShopUI();
+        }
+
+        function updateShopUI() {
+            document.getElementById('shop-essence-val').innerText = saveData.essence;
+            ['atk', 'hp', 'mp', 'crit'].forEach(s => {
+                const cost = 10 * (saveData.skills[s] + 1);
+                document.getElementById(`lvl-${s}`).innerText = saveData.skills[s];
+                const btn = document.getElementById(`buy-${s}`);
+                btn.innerText = `Custo: ${cost}`;
+                if(saveData.essence >= cost) { btn.classList.add('can-buy'); btn.disabled = false; } else { btn.classList.remove('can-buy'); btn.disabled = true; }
+            });
+        }
+
+        function buyUpgrade(type) {
+            const cost = 10 * (saveData.skills[type] + 1);
+            if(saveData.essence >= cost) { saveData.essence -= cost; saveData.skills[type]++; saveGame(); updateShopUI(); }
+        }
+
+        function restartRun() {
+            document.getElementById('shop-overlay').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'block';
+            initStats();
+        }
+
+        function showToast(msg, color='#fff') { const el = document.getElementById('toast-msg'); el.innerText = msg; el.style.color = color; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 1500); }
+
         document.getElementById('start-btn').addEventListener('click', () => {
-            initAudio(); // Navegadores exigem interação para liberar áudio
-            document.getElementById('start-overlay').style.display = 'none';
-            loop();
+            initAudio(); document.getElementById('start-overlay').style.display = 'none';
+            initStats(); drawGame(Date.now());
         });
     </script>
 </body>
 </html>
+
