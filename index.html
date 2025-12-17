@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon RPG: V27 Combat Update</title>
+    <title>Neon RPG: V28 Stable</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
@@ -28,41 +28,29 @@
         .hp { background: linear-gradient(90deg, #ff4444, #ff0055); box-shadow: 0 0 10px #ff0055; }
         .mp { background: linear-gradient(90deg, #44ccff, #0088ff); box-shadow: 0 0 10px #0088ff; }
         
-        /* BATTLE LOG (V26+) */
-        .battle-log-container {
-            position: absolute; bottom: 110px; left: 0; width: 100%; 
-            max-height: 120px; overflow-y: hidden; 
-            display: flex; flex-direction: column-reverse; 
-            padding: 10px 20px; pointer-events: none;
-            mask-image: linear-gradient(to top, black 80%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to top, black 80%, transparent 100%);
-        }
+        /* LOG */
+        .battle-log-container { position: absolute; bottom: 110px; left: 0; width: 100%; max-height: 120px; overflow-y: hidden; display: flex; flex-direction: column-reverse; padding: 10px 20px; pointer-events: none; mask-image: linear-gradient(to top, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to top, black 80%, transparent 100%); }
         .log-entry { font-family: 'Share Tech Mono', monospace; font-size: 12px; margin-bottom: 4px; text-shadow: 0 1px 2px #000; }
-        .log-player { color: #00ffff; }
-        .log-enemy { color: #ff4444; }
-        .log-system { color: #ffff00; font-weight: bold; }
+        .log-player { color: #00ffff; } .log-enemy { color: #ff4444; } .log-system { color: #ffff00; font-weight: bold; }
 
-        /* SKILL BUTTONS (DYNAMIC) */
+        /* SKILL BUTTONS */
         .controls { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; pointer-events: auto; margin-bottom: 15px; width: 100%; max-width: 500px; align-self: center; }
         .btn { background: rgba(10, 10, 15, 0.9); border: 1px solid #444; color: #fff; padding: 12px 0; border-radius: 6px; font-weight: bold; font-size: 11px; font-family: 'Orbitron'; cursor: pointer; backdrop-filter: blur(10px); transition: 0.1s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .btn:active { transform: scale(0.96); border-color: #fff; }
         .btn span { font-size: 9px; color: #aaa; margin-top: 2px; }
-        
-        /* Cores por Slot */
-        #btn-s1 { border-color: #ff4444; color: #ffcccc; } /* Skill 1 (Basica) */
-        #btn-s2 { border-color: #44ccff; color: #ccffff; } /* Skill 2 (Util/Def) */
-        #btn-s3 { border-color: #b026ff; color: #e0b0ff; } /* Skill 3 (Ult) */
-        #btn-rest { border-color: #ffff00; color: #ffffcc; } /* Descanso */
-        
+        #btn-s1 { border-color: #ff4444; color: #ffcccc; } #btn-s2 { border-color: #44ccff; color: #ccffff; } #btn-s3 { border-color: #b026ff; color: #e0b0ff; } #btn-rest { border-color: #ffff00; color: #ffffcc; }
         .btn:disabled { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; border-color: #333; }
 
-        /* MAP SYSTEM */
-        #map-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(10, 10, 15, 0.98); z-index: 80; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; pointer-events: auto; }
+        /* OVERLAYS COMUM */
+        #map-overlay, #shop-overlay, #inventory-overlay, #profile-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(10, 10, 15, 0.98); z-index: 80; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; pointer-events: auto; }
+        
+        /* MAP HEADER */
         .map-header { text-align: center; margin: 20px 0; width: 100%; max-width: 400px; }
         .map-title h1 { font-family: 'Orbitron'; color: #00ffff; font-size: 20px; letter-spacing: 2px; }
         .header-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; margin-top: 15px; }
         .menu-btn { padding: 10px; border-radius: 6px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; font-size: 11px; border: 1px solid #555; background: rgba(255,255,255,0.05); color: white; transition: 0.2s; }
         .btn-shop { border-color: #b026ff; color: #e0b0ff; } .btn-equip { border-color: #00ff00; color: #ccffcc; } .btn-profile { border-color: #00ffff; color: #ccffff; }
+        
         .map-grid { display: flex; flex-direction: column-reverse; gap: 15px; width: 100%; max-width: 350px; padding-bottom: 50px; position: relative; margin-top: 20px; }
         .map-grid::before { content: ''; position: absolute; top: 20px; bottom: 20px; left: 50%; width: 2px; background: #333; transform: translateX(-50%); z-index: 0; }
         .map-node { background: #111; border: 2px solid #444; width: 100%; padding: 12px; border-radius: 8px; position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s; opacity: 0.5; filter: grayscale(1); pointer-events: none; }
@@ -75,45 +63,40 @@
         .node-desc { font-family: 'Share Tech Mono'; font-size: 11px; color: #aaa; text-transform: uppercase; }
         @keyframes pulseNode { 0%{transform:scale(1);} 50%{transform:scale(1.02);} 100%{transform:scale(1);} }
 
-        /* OUTROS PAINÉIS (INVENTORY, SHOP, ETC - MANTER ESTILO V25) */
-        #shop-overlay, #inventory-overlay, #profile-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(5, 5, 10, 0.98); z-index: 100; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; pointer-events: auto; }
-        .shop-header h1, .inv-header h1 { font-family: 'Orbitron'; color: #ff4444; font-size: 24px; margin-bottom: 10px; }
+        /* SHOP STYLES */
+        .shop-header h1 { font-family: 'Orbitron'; color: #ff4444; font-size: 24px; margin-bottom: 10px; margin-top: 20px; }
+        .shop-essence { font-size: 32px; color: #b026ff; font-weight: bold; font-family: 'Orbitron'; margin-bottom: 20px; }
         .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 420px; margin-bottom: 20px; }
         .skill-card { background: rgba(255, 255, 255, 0.03); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
         .sc-atk { border-color: #00f0ff; } .sc-hp { border-color: #bd00ff; } .sc-mp { border-color: #a020f0; } .sc-crt { border-color: #00ff00; } .sc-def { border-color: #0088ff; } .sc-spd { border-color: #ffff00; }
+        .skill-icon { font-size: 30px; margin-bottom: 5px; }
         .buy-btn { width: 100%; padding: 8px; border-radius: 4px; background: #222; border: 1px solid #444; color: #666; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; }
         .buy-btn.can-buy { border-color: #fff; background: rgba(255,255,255,0.15); color: #fff; }
         #restart-btn { width: 100%; max-width: 420px; padding: 15px; background: #333; border: 1px solid #fff; color: white; font-family: 'Orbitron'; cursor: pointer; margin-bottom: 20px; }
-        
-        .inv-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; max-width: 400px; }
-        .inv-slot { aspect-ratio: 1; background: #111; border: 2px solid #333; border-radius: 5px; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; }
-        .inv-slot.equipped { border-color: #00ffff; box-shadow: 0 0 10px #00ffff; }
-        
-        /* DIALOGUE */
-        #dialogue-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: flex-end; padding: 20px; z-index: 60; pointer-events: auto; }
-        .dialogue-box { background: rgba(10, 15, 25, 0.95); border: 1px solid #00ffff; border-top: 3px solid #00ffff; padding: 25px; border-radius: 12px; margin-bottom: 10%; box-shadow: 0 0 20px rgba(0,255,255,0.1); }
-        .char-name { color: #00ffff; font-size: 14px; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px; font-family: 'Orbitron'; text-transform: uppercase; }
-        .dialogue-text { font-family: 'Share Tech Mono', monospace; font-size: 15px; line-height: 1.5; color: #e0e0e0; min-height: 60px; white-space: pre-wrap; }
-        .next-btn { background: transparent; color: #00ffff; border: 2px solid #00ffff; padding: 15px; width: 100%; margin-top: 15px; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
 
         /* START */
         #start-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #050505; z-index: 150; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; pointer-events: auto; }
         .class-container { display: grid; gap: 15px; width: 100%; max-width: 400px; }
         .class-btn { padding: 20px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: white; border-radius: 8px; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
         
-        #loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: auto; }
-        .loader { width: 50px; height: 50px; border: 5px solid #333; border-top: 5px solid #00ffff; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
+        #relic-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; }
+        .relic-card { background: #222; border: 1px solid #444; padding: 20px; margin-bottom: 10px; width: 100%; max-width: 300px; cursor: pointer; display: flex; align-items: center; }
+        .relic-icon { font-size: 30px; margin-right: 15px; }
+
+        #dialogue-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: flex-end; padding: 20px; z-index: 60; pointer-events: auto; }
+        .dialogue-box { background: rgba(10, 15, 25, 0.95); border: 1px solid #00ffff; border-top: 3px solid #00ffff; padding: 25px; border-radius: 12px; margin-bottom: 10%; box-shadow: 0 0 20px rgba(0,255,255,0.1); }
+        .char-name { color: #00ffff; font-size: 14px; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px; font-family: 'Orbitron'; text-transform: uppercase; }
+        .dialogue-text { font-family: 'Share Tech Mono', monospace; font-size: 15px; line-height: 1.5; color: #e0e0e0; min-height: 60px; white-space: pre-wrap; }
+        .next-btn { background: transparent; color: #00ffff; border: 2px solid #00ffff; padding: 15px; width: 100%; margin-top: 15px; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
+
         .toast { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold; color: #fff; text-shadow: 0 0 10px #fff; opacity: 0; transition: opacity 0.5s; z-index: 80; pointer-events: none; }
         .toast.show { opacity: 1; transform: translate(-50%, -80%); }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
-    <div id="loading-overlay"><div class="loader"></div><div style="font-family:'Orbitron'; color:#00ffff; font-size:12px;">SYSTEM UPDATE V27...</div></div>
 
-    <div id="start-overlay">
+    <div id="start-overlay" style="display:flex;">
         <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 15px; font-size: 32px; font-family:'Orbitron'; color:white">NEON PROTOCOL</h1>
         <div class="class-container">
             <button class="class-btn" onclick="chooseClass('samurai')"><div><div style="font-weight:bold; color:#ff0055">LÂMINA VERMELHA</div><small>Leitura e Ritmo</small></div><div style="font-size:24px">⚔️</div></button>
@@ -127,7 +110,7 @@
             <div class="map-title"><h1>MAPA DE REDE</h1><p id="map-sector-name">SETOR 1</p></div>
             <div class="header-buttons">
                 <button class="menu-btn btn-profile" onclick="/*...*/">PERFIL 👤</button>
-                <button class="menu-btn btn-equip" onclick="openInventory()">ITEMS 🎒</button>
+                <button class="menu-btn btn-equip" onclick="alert('Inventário vazio')">ITEMS 🎒</button>
                 <button class="menu-btn btn-shop" onclick="openShopFromMap()">LOJA 🛒</button>
             </div>
         </div>
@@ -171,13 +154,7 @@
         <button id="restart-btn" onclick="closeShop()">VOLTAR AO MAPA</button>
     </div>
 
-    <div id="inventory-overlay">
-        <div class="inv-header"><h1 style="font-family:'Orbitron'; color:#00ff00">EQUIPAMENTOS</h1><div style="color:#00ff00; font-size:20px;">💾 <span id="inv-data-val">0</span></div></div>
-        <div class="gacha-section"><button class="buy-btn" style="border-color:#00ff00; color:#00ff00; font-size:14px; padding:15px;" onclick="rollGacha()">FABRICAR (50 DADOS)</button></div>
-        <div class="inv-grid" id="inv-grid"></div>
-        <button id="restart-btn" style="margin-top:20px; border-color:#00ff00; color:#00ff00" onclick="closeInventory()">VOLTAR</button>
-    </div>
-
+    <div id="relic-overlay"><div class="relic-title">ARTEFATO RECUPERADO</div><div class="relic-container" id="relic-list"></div></div>
     <div id="dialogue-overlay"><div class="dialogue-box"><div class="char-name" id="char-name-disp">LOG</div><div class="dialogue-text" id="story-text"></div><button class="next-btn" id="dialogue-btn" onclick="handleDialogueClick()">>></button></div></div>
 
     <script>
@@ -185,73 +162,64 @@
         const SECTOR_NAMES = { 1: "SETOR 1: GRID", 2: "SETOR 2: FIREWALL", 3: "SETOR 3: NÚCLEO" };
         const NODE_NAMES = { 1: ["Cache", "Proxy", "Buffer", "Daemon", "Rootkit", "Malware", "Spyware", "Adware", "Trojan", "AGREGADOR"], 2: ["Sentinel", "Guardian", "Worm", "Backdoor", "Exploit", "Phishing", "Ransom", "Keylog", "Botnet", "VIGIA"], 3: ["Null", "Void", "NaN", "FatalErr", "BSOD", "Overflow", "Leak", "Deadlock", "Segfault", "VÍRUS MESTRE"] };
         const SECTOR_LORE = { 1: "SETOR 1: THE GRID\n\nSetor periférico. Fragmentos de dados hostis detectados. Inimigos são fracos mas numerosos.", 2: "SETOR 2: FIREWALL\n\nCamada de segurança corrompida. Cuidado com o calor (Overheat).", 3: "SETOR 3: NÚCLEO (VOID)\n\nO vazio do sistema. Onde o vírus reside." };
-        const ITEMS_DB = [ { name: "Chip Quebrado", type: "atk", val: 2, icon: "💾" }, { name: "Placa Velha", type: "def", val: 1, icon: "🛡️" }, { name: "Cabo de Rede", type: "spd", val: 1, icon: "⚡" }, { name: "Bateria AA", type: "mp", val: 10, icon: "🔋" }, { name: "Neon Katana", type: "atk", val: 10, rarity: "rare", icon: "⚔️" }, { name: "Escudo Digital", type: "def", val: 5, rarity: "rare", icon: "🔰" }, { name: "Processador i9", type: "atk", val: 25, rarity: "epic", icon: "💠" } ];
-
-        // --- SKILL DEFINITIONS ---
-        const SKILLS = {
-            samurai: [
-                { id: 1, name: "CORTE", cost: 0, desc: "Dano Físico Médio" },
-                { id: 2, name: "POSTURA", cost: 0, desc: "Defesa + Buff Próx. Ataque", isBuff: true },
-                { id: 3, name: "GOLPE PRECISO", cost: 20, desc: "Alto Dano, Ignora Defesa" }
-            ],
-            mage: [
-                { id: 1, name: "RAIO ARCANO", cost: 10, desc: "Dano Mágico Alto" },
-                { id: 2, name: "ESCUDO MÁGICO", cost: 15, desc: "Absorve Dano por 2 turnos", isBuff: true },
-                { id: 3, name: "EXPLOSÃO", cost: 40, desc: "Dano Massivo (Cooldown)" }
-            ],
-            tank: [
-                { id: 1, name: "ATAQUE PESADO", cost: 0, desc: "Dano Baixo, Gera Ameaça" },
-                { id: 2, name: "FORTIFICAR", cost: 10, desc: "Reduz Dano por 2 turnos", isBuff: true },
-                { id: 3, name: "CONTRA-ATAQUE", cost: 15, desc: "Reflete Dano por 1 turno", isBuff: true }
-            ]
-        };
-
+        const SKILLS = { samurai: [ { id: 1, name: "CORTE", cost: 0 }, { id: 2, name: "POSTURA", cost: 0 }, { id: 3, name: "GOLPE", cost: 20 } ], mage: [ { id: 1, name: "RAIO", cost: 10 }, { id: 2, name: "ESCUDO", cost: 15 }, { id: 3, name: "EXPLOSÃO", cost: 40 } ], tank: [ { id: 1, name: "BASH", cost: 0 }, { id: 2, name: "FORTIFICAR", cost: 10 }, { id: 3, name: "COUNTER", cost: 15 } ] };
         const CLASS_STATS = { samurai: { name: "Lâmina", color: "#ff0055", hpMult: 0.9, mpMult: 0.8, atkBonus: 8, critBonus: 0.20, defBonus: 0 }, mage: { name: "Código", color: "#00ffff", hpMult: 0.7, mpMult: 1.6, atkBonus: 2, magicMult: 1.4, defBonus: 0 }, tank: { name: "Firewall", color: "#00ff00", hpMult: 1.5, mpMult: 0.6, atkBonus: -2, defBonus: 4 } };
+        const RELIC_DEX = [ { id: 'vamp', name: 'Dreno', icon: '🩸', desc: 'Cura 10% do dano.' }, { id: 'thorns', name: 'Espinhos', icon: '🌵', desc: 'Reflete 20% do dano.' }, { id: 'double', name: 'Loop', icon: '➰', desc: '25% Magia Dupla.' }, { id: 'crit', name: 'Overclock', icon: '⚡', desc: 'Crítico 3x.' }, { id: 'exec', name: 'Delete', icon: '💀', desc: 'Mata se HP < 20%.' }, { id: 'rich', name: 'Miner', icon: '💎', desc: '+50% Essência.' } ];
         
-        const DEFAULT_SAVE = { essence: 0, dataChips: 0, skills: { atk: 0, hp: 0, mp: 0, crit: 0, def: 0, spd: 0 }, progress: { sector: 1, node: 1 }, inventory: [], equipped: null };
-        let saveData = JSON.parse(localStorage.getItem('neonRpgV27')) || DEFAULT_SAVE;
-        if(saveData.dataChips === undefined) saveData.dataChips = 0; if(!saveData.inventory) saveData.inventory = [];
-        function saveGame() { localStorage.setItem('neonRpgV27', JSON.stringify(saveData)); }
+        const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, crit: 0, def: 0, spd: 0 }, progress: { sector: 1, node: 1 } };
+        let saveData;
+        try {
+            saveData = JSON.parse(localStorage.getItem('neonRpgV28')) || DEFAULT_SAVE;
+            // Robustez: garante que campos existam
+            if(saveData.skills.def === undefined) saveData.skills.def = 0;
+            if(saveData.skills.spd === undefined) saveData.skills.spd = 0;
+            if(!saveData.progress) saveData.progress = { sector: 1, node: 1 };
+        } catch(e) {
+            console.log("Save corrompido, resetando...");
+            saveData = DEFAULT_SAVE;
+        }
+        function saveGame() { localStorage.setItem('neonRpgV28', JSON.stringify(saveData)); }
 
         let assets = { player: new Image(), enemy: new Image() };
-        let state = { 
-            turn: 'player', sector: 1, node: 1, wavesTotal: 1, waveCurrent: 1, 
-            hp: 0, maxHp: 0, mp: 0, maxMp: 0, enemyHp: 0, enemyMaxHp: 0, isBoss: false, 
-            particles: [], shake: 0, runEssence: 0, currentClass: 'samurai', 
-            lastSkill: null, activeBuffs: {}, enemyAbility: null, cooldowns: {} 
-        };
+        let state = { turn: 'player', sector: 1, node: 1, wavesTotal: 1, waveCurrent: 1, hp: 0, maxHp: 0, mp: 0, maxMp: 0, enemyHp: 0, enemyMaxHp: 0, isBoss: false, particles: [], shake: 0, runEssence: 0, currentClass: 'samurai', bgProps: [], relics: [], logs: [], activeBuffs: {}, cooldowns: {}, lastSkill: null };
         
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
-        let width, height, gameLoopId, unlockTimer;
-        
+        let width, height, gameLoopId;
+
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
-        setTimeout(() => { document.getElementById('loading-overlay').style.display='none'; document.getElementById('start-overlay').style.display='flex'; }, 1000);
 
-        async function loadSprite(imgObj, url) { return new Promise(r => { imgObj.onload=()=>r(true); imgObj.onerror=()=>r(false); imgObj.src=url; }); }
+        // --- ASSET LOADER (NON-BLOCKING) ---
+        function setAssetSrc(imgObj, url) {
+            imgObj.loaded = false;
+            imgObj.src = url;
+            imgObj.onload = () => { imgObj.loaded = true; };
+            imgObj.onerror = () => { imgObj.loaded = false; console.log("Erro img:", url); };
+        }
 
-        async function chooseClass(className) {
-            cancelAnimationFrame(gameLoopId);
-            document.getElementById('start-overlay').style.display='none'; document.getElementById('loading-overlay').style.display='flex';
+        // --- GAME START ---
+        function chooseClass(className) {
+            document.getElementById('start-overlay').style.display='none';
             state.currentClass = className;
-            await loadSprite(assets.player, `https://robohash.org/Neon${className}?set=set1`);
-            document.getElementById('loading-overlay').style.display='none'; 
-            initStats(); initBackground(); drawGame(Date.now());
+            // Carrega imagem em paralelo, não espera
+            setAssetSrc(assets.player, `https://robohash.org/Neon${className}?set=set1`);
+            initStats(); 
+            initBackground(); 
+            if(gameLoopId) cancelAnimationFrame(gameLoopId);
+            drawGame(Date.now());
         }
 
         function initStats() {
             updatePlayerStats();
-            state.sector = saveData.progress.sector; state.turn = 'player';
-            updateSkillButtons();
-            updateHUD(); if(state.sector === 1 && saveData.progress.node === 1) startDialogue("SISTEMA", SECTOR_LORE[1], showMap); else showMap();
+            state.sector = saveData.progress.sector; state.relics = []; state.turn = 'player';
+            updateSkillButtons(); updateHUD(); 
+            if(state.sector === 1 && saveData.progress.node === 1) startDialogue("SISTEMA", SECTOR_LORE[1], showMap); else showMap();
         }
 
         function updatePlayerStats() {
             const cls = CLASS_STATS[state.currentClass];
-            let eqHp = saveData.equipped?.type === 'hp' ? saveData.equipped.val : 0;
-            let eqMp = saveData.equipped?.type === 'mp' ? saveData.equipped.val : 0;
-            const baseHp = 100 + (saveData.skills.hp * 20) + eqHp; state.maxHp = Math.floor(baseHp * cls.hpMult); state.hp = state.maxHp;
-            const baseMp = 50 + (saveData.skills.mp * 15) + eqMp; state.maxMp = Math.floor(baseMp * cls.mpMult); state.mp = state.maxMp;
+            const baseHp = 100 + (saveData.skills.hp * 20); state.maxHp = Math.floor(baseHp * cls.hpMult); state.hp = state.maxHp;
+            const baseMp = 50 + (saveData.skills.mp * 15); state.maxMp = Math.floor(baseMp * cls.mpMult); state.mp = state.maxMp;
         }
 
         function updateSkillButtons() {
@@ -264,9 +232,10 @@
 
         function initBackground() { state.bgProps = []; for(let i=0; i<50; i++) state.bgProps.push({ x: Math.random()*width, y: Math.random()*height, speed: Math.random()*2+1, val: Math.random() }); }
 
+        // --- MAP ---
         function showMap() {
             document.getElementById('game-ui').style.display='none'; document.getElementById('map-overlay').style.display='flex';
-            document.getElementById('shop-overlay').style.display='none'; document.getElementById('inventory-overlay').style.display='none';
+            document.getElementById('shop-overlay').style.display='none';
             const grid = document.getElementById('map-grid'); grid.innerHTML = '';
             document.getElementById('map-sector-name').innerText = SECTOR_NAMES[state.sector];
             let maxNode = (state.sector === saveData.progress.sector) ? saveData.progress.node : (state.sector < saveData.progress.sector ? 11 : 1);
@@ -283,7 +252,7 @@
         }
 
         function enterNode(nodeIndex) {
-            state.hp = state.maxHp; state.mp = state.maxMp; // Cycle of Life: Restore on node start
+            state.hp = state.maxHp; state.mp = state.maxMp; // Restore on node enter
             state.node = nodeIndex; state.wavesTotal = (nodeIndex === 10) ? 1 : Math.floor(Math.random() * 2) + 1; state.waveCurrent = 1;
             state.activeBuffs = {}; state.cooldowns = {}; state.lastSkill = null;
             document.getElementById('map-overlay').style.display = 'none'; document.getElementById('game-ui').style.display = 'flex';
@@ -293,29 +262,25 @@
 
         function exitBattle() { document.getElementById('game-ui').style.display='none'; showMap(); }
 
-        async function startBattle() {
+        function startBattle() {
             state.isBoss = (state.node === 10 && state.waveCurrent === 1);
             let diffMult = state.sector + (state.node * 0.1);
             state.enemyMaxHp = Math.floor(100 * diffMult * 1.5); if(state.isBoss) state.enemyMaxHp *= 2.5; state.enemyHp = state.enemyMaxHp;
             let spriteId = state.isBoss ? `BOSS_SEC${state.sector}` : `MOB_S${state.sector}_N${state.node}`;
-            await loadSprite(assets.enemy, `https://robohash.org/${spriteId}?set=set2`);
+            setAssetSrc(assets.enemy, `https://robohash.org/${spriteId}?set=set2`);
             updateHUD(); state.turn = 'player'; toggleButtons(true);
-            addLog(`Inimigo: ${state.enemyHp} HP`, "enemy");
+            addLog(`Inimigo detectado: ${state.enemyHp} HP`, "enemy");
         }
 
+        // --- SKILL LOGIC ---
         function toggleButtons(enable) {
             const skills = SKILLS[state.currentClass];
             for(let i=0; i<3; i++) {
                 const btn = document.getElementById(`btn-s${i+1}`);
                 if(!enable) { btn.disabled = true; continue; }
-                
-                // Logic Checks
                 let cost = skills[i].cost;
-                if(state.lastSkill === i) cost = Math.floor(cost * 1.3); // Fadiga cost
-                
-                if(state.mp < cost) btn.disabled = true;
-                else if(skills[i].name === "EXPLOSÃO" && state.cooldowns.explosion > 0) btn.disabled = true;
-                else btn.disabled = false;
+                if(state.lastSkill === i) cost = Math.floor(cost * 1.3);
+                btn.disabled = (state.mp < cost);
             }
             document.getElementById('btn-rest').disabled = !enable;
         }
@@ -325,208 +290,133 @@
             state.turn = 'anim'; toggleButtons(false); 
             
             if(skillIdx === 0) { // REST
-                let rec = 25 + (saveData.skills.mp * 5);
-                state.mp = Math.min(state.maxMp, state.mp + rec);
-                addLog(`Descanso: +${rec} MP.`, "player");
-                state.lastSkill = null; // Clears fatigue
-                updateHUD(); setTimeout(enemyTurn, 800);
-                return;
+                let rec = 25 + (saveData.skills.mp * 5); state.mp = Math.min(state.maxMp, state.mp + rec);
+                addLog(`Descanso: +${rec} MP`, "player"); state.lastSkill = null;
+                updateHUD(); setTimeout(enemyTurn, 800); return;
             }
 
             const skill = SKILLS[state.currentClass][skillIdx-1];
             let cost = skill.cost;
             let effectiveness = 1.0;
+            if(state.lastSkill === skillIdx) { cost = Math.floor(cost * 1.3); effectiveness = 0.8; addLog("Fadiga! Eficácia reduzida.", "system"); }
+            state.lastSkill = skillIdx; state.mp -= cost;
 
-            // FATIGUE SYSTEM
-            if(state.lastSkill === skillIdx) {
-                cost = Math.floor(cost * 1.3);
-                effectiveness = 0.8;
-                addLog("Fadiga! Custo +30%, Eficácia -20%", "system");
-            }
-            state.lastSkill = skillIdx;
-            state.mp -= cost;
-
-            // CLASS SKILL LOGIC
             const cls = CLASS_STATS[state.currentClass];
-            let eqAtk = saveData.equipped?.type === 'atk' ? saveData.equipped.val : 0;
-            let baseDmg = (15 + (saveData.skills.atk * 5) + eqAtk);
+            let baseDmg = (15 + (saveData.skills.atk * 5));
 
-            if(state.currentClass === 'samurai') {
-                if(skill.name === "CORTE") {
-                    let dmg = Math.floor(baseDmg * cls.atkBonus * 0.1 * effectiveness);
-                    applyDamage(dmg, false);
-                } else if(skill.name === "POSTURA") {
-                    state.activeBuffs.postura = 1;
-                    addLog("Postura Defensiva Ativada!", "player");
-                    setTimeout(enemyTurn, 800); return;
-                } else if(skill.name === "GOLPE PRECISO") {
-                    let dmg = Math.floor(baseDmg * 2.5 * effectiveness); // High dmg
-                    applyDamage(dmg, true); // Ignores defense (simulated by high dmg)
-                }
-            } 
-            else if (state.currentClass === 'mage') {
-                if(skill.name === "RAIO ARCANO") {
-                    let dmg = Math.floor(baseDmg * 1.5 * effectiveness);
-                    applyDamage(dmg, false);
-                } else if(skill.name === "ESCUDO MÁGICO") {
-                    state.activeBuffs.shield = 2; // 2 turns
-                    addLog("Escudo Mágico Ativo (2 turnos)", "player");
-                    setTimeout(enemyTurn, 800); return;
-                } else if(skill.name === "EXPLOSÃO") {
-                    let dmg = Math.floor(baseDmg * 3.5 * effectiveness);
-                    state.cooldowns.explosion = 2;
-                    applyDamage(dmg, false);
-                }
+            // GENERIC LOGIC FOR DEMO (You can expand per class as in V27)
+            if(skill.name === "POSTURA" || skill.name === "ESCUDO" || skill.name === "FORTIFICAR") {
+                state.activeBuffs.def = 1; addLog(`${skill.name} ativado!`, "player");
+            } else {
+                let multiplier = skill.cost > 0 ? (skill.cost/10 + 1) : 1;
+                let dmg = Math.floor(baseDmg * multiplier * effectiveness);
+                spawnParticles(width*0.75, height*0.45, '#ffaa00', 30); screenShake(10);
+                state.enemyHp -= dmg;
+                addLog(`Usou ${skill.name}: ${dmg} dano.`, "player");
             }
-            else if (state.currentClass === 'tank') {
-                if(skill.name === "ATAQUE PESADO") {
-                    let dmg = Math.floor(baseDmg * 0.8 * effectiveness);
-                    applyDamage(dmg, false);
-                } else if(skill.name === "FORTIFICAR") {
-                    state.activeBuffs.fortify = 2;
-                    addLog("Fortificar: Defesa Aumentada", "player");
-                    setTimeout(enemyTurn, 800); return;
-                } else if(skill.name === "CONTRA-ATAQUE") {
-                    state.activeBuffs.counter = 1;
-                    addLog("Contra-Ataque Preparado", "player");
-                    setTimeout(enemyTurn, 800); return;
-                }
-            }
-        }
-
-        function applyDamage(rawDmg, ignoreCap) {
-            spawnParticles(width*0.75, height*0.45, '#ffaa00', 30); screenShake(10);
             
-            // DAMAGE CAP (40% MAX HP)
-            let cap = Math.floor(state.enemyMaxHp * 0.40);
-            let finalDmg = Math.min(rawDmg, cap);
-            if(finalDmg < rawDmg && !ignoreCap) addLog("Dano limitado pelo sistema!", "system");
-
-            // CRIT CHECK
-            let critChance = 0.05 + (saveData.skills.crit * 0.02);
-            if(Math.random() < critChance) { finalDmg = Math.floor(finalDmg * 1.5); showToast("CRÍTICO!", "#ffcc00"); screenShake(20); }
-
-            state.enemyHp -= finalDmg;
-            addLog(`Causou ${finalDmg} de dano.`, "player");
             updateHUD();
-
-            if(state.enemyHp <= 0) { state.enemyHp = 0; handleVictory(); }
-            else { setTimeout(enemyTurn, 1000); }
+            if(state.enemyHp <= 0) { state.enemyHp = 0; handleVictory(); } else setTimeout(enemyTurn, 1000);
         }
 
         function enemyTurn() {
             if(state.enemyHp <= 0) return;
+            let baseDmg = 10 + (state.sector * 5); if(state.isBoss) baseDmg *= 1.5;
             
-            // DECREMENT BUFFS/COOLDOWNS
-            if(state.cooldowns.explosion > 0) state.cooldowns.explosion--;
-            if(state.activeBuffs.shield > 0) state.activeBuffs.shield--;
-            if(state.activeBuffs.fortify > 0) state.activeBuffs.fortify--;
+            let def = saveData.skills.def;
+            if(state.activeBuffs.def) { def += 15; state.activeBuffs.def = 0; }
+            let finalDmg = Math.max(1, baseDmg - def);
             
-            // AI LOGIC
-            let action = "attack";
-            if(state.enemyHp < state.enemyMaxHp * 0.3) action = "defend"; // Survival instinct
-            if(state.mp < 15) action = "pressure"; // Player vulnerable
-
-            let baseDmg = 10 + (state.sector * 5);
-            if(state.isBoss) baseDmg *= 1.5;
-
-            if(action === "defend") {
-                state.activeBuffs.enemyShield = 1;
-                addLog("Inimigo ativou Escudo Viral!", "enemy");
-            } else {
-                let dmg = baseDmg + Math.floor(Math.random() * 5);
-                
-                // PLAYER DEFENSE CALC
-                let def = saveData.skills.def;
-                if(state.activeBuffs.postura) { def += 10; state.activeBuffs.postura = 0; }
-                if(state.activeBuffs.fortify) def += 15;
-                
-                let finalDmg = Math.max(1, dmg - def);
-
-                // ABSORB SHIELD (MAGE)
-                if(state.activeBuffs.shield > 0) {
-                    finalDmg = Math.floor(finalDmg * 0.5);
-                    addLog("Escudo absorveu parte do dano.", "player");
-                }
-
-                // COUNTER (TANK)
-                if(state.activeBuffs.counter > 0) {
-                    state.activeBuffs.counter = 0;
-                    let reflect = Math.floor(finalDmg * 1.5);
-                    state.enemyHp -= reflect;
-                    addLog(`Contra-ataque! Inimigo sofreu ${reflect}.`, "player");
-                    if(state.enemyHp <= 0) { handleVictory(); return; }
-                }
-
-                state.hp -= finalDmg;
-                spawnParticles(width*0.25, height*0.75, '#ff0000', 20); screenShake(15);
-                addLog(`Inimigo atacou: -${finalDmg} HP`, "enemy");
-                
-                // VIRUS SPECIALS
-                if(action === "pressure" && Math.random() < 0.5) {
-                    state.mp = Math.max(0, state.mp - 10);
-                    addLog("Vírus drenou seu MP!", "enemy");
-                }
-            }
-
+            state.hp -= finalDmg;
+            spawnParticles(width*0.25, height*0.75, '#ff0000', 20); screenShake(15);
+            addLog(`Inimigo atacou: -${finalDmg} HP`, "enemy");
+            
             updateHUD();
-            if(state.hp <= 0) { state.hp = state.maxHp; addLog("FALHA DE SISTEMA.", "system"); setTimeout(exitBattle, 2000); }
+            if(state.hp <= 0) { state.hp = state.maxHp; addLog("FALHA CRÍTICA.", "system"); setTimeout(exitBattle, 2000); }
             else { state.turn = 'player'; toggleButtons(true); }
         }
 
-        // --- VICTORY & OTHERS ---
         function handleVictory() {
             let essenceGain = 5 + (state.sector * 5); if(state.isBoss) essenceGain *= 5;
-            saveData.essence += Math.floor(essenceGain);
-            if(Math.random() < 0.4) { saveData.dataChips += 5; addLog("Drop: 5 DADOS 💾", "system"); }
-            saveGame();
-            
+            saveData.essence += Math.floor(essenceGain); saveGame();
+            addLog(`Vitória! +${essenceGain} Essência.`, "system");
+
             if(state.isBoss && state.sector === saveData.progress.sector) { saveData.progress.sector++; saveData.progress.node = 1; saveGame(); }
             else if(!state.isBoss && state.sector === saveData.progress.sector && state.node === saveData.progress.node) { saveData.progress.node++; saveGame(); }
 
             if(state.waveCurrent < state.wavesTotal && !state.isBoss) {
                 state.waveCurrent++; setTimeout(() => { addLog(`ONDA ${state.waveCurrent} INICIADA`, "system"); startBattle(); }, 1500);
-            } else { setTimeout(exitBattle, 1500); }
+            } else setTimeout(exitBattle, 1500);
         }
 
-        function openInventory() { document.getElementById('map-overlay').style.display='none'; document.getElementById('inventory-overlay').style.display='flex'; renderInventory(); }
-        function closeInventory() { document.getElementById('inventory-overlay').style.display='none'; showMap(); }
-        function renderInventory() {
-            document.getElementById('inv-data-val').innerText = saveData.dataChips;
-            const grid = document.getElementById('inv-grid'); grid.innerHTML = '';
-            saveData.inventory.forEach((item, idx) => {
-                const div = document.createElement('div'); div.className = 'inv-slot';
-                if(saveData.equipped && saveData.equipped.id === item.id) div.classList.add('equipped');
-                div.innerHTML = `<div class="inv-item">${item.icon}</div>`;
-                div.onclick = () => equipItem(idx); grid.appendChild(div);
-            });
-        }
-        function rollGacha() {
-            if(saveData.dataChips < 50) return;
-            saveData.dataChips -= 50;
-            let item = { ...ITEMS_DB[Math.floor(Math.random()*ITEMS_DB.length)], id: Date.now() };
-            saveData.inventory.push(item); saveGame(); renderInventory();
-        }
-        function equipItem(idx) {
-            let item = saveData.inventory[idx];
-            saveData.equipped = (saveData.equipped && saveData.equipped.id === item.id) ? null : item;
-            saveGame(); renderInventory(); updatePlayerStats();
-        }
+        // --- SHOP ---
+        function openShopFromMap() { document.getElementById('map-overlay').style.display='none'; document.getElementById('shop-overlay').style.display='flex'; updateShopUI(); }
+        function closeShop() { document.getElementById('shop-overlay').style.display='none'; showMap(); updatePlayerStats(); }
+        function updateShopUI() { document.getElementById('shop-essence-val').innerText = saveData.essence; ['atk','hp','mp','crit','def','spd'].forEach(s => { document.getElementById(`lvl-${s}`).innerText = saveData.skills[s]; }); }
+        function buyUpgrade(type) { let cost = 10 * (saveData.skills[type]+1); if(saveData.essence >= cost) { saveData.essence-=cost; saveData.skills[type]++; saveGame(); updateShopUI(); } }
 
-        // --- DRAW/AUDIO ---
-        function updateHUD() { document.getElementById('hp-bar').style.width = (state.hp/state.maxHp*100)+'%'; document.getElementById('mp-bar').style.width = (state.mp/state.maxMp*100)+'%'; document.getElementById('sector-display').innerText = `${state.sector}-${state.node}`; document.getElementById('essence-val').innerText = saveData.essence; document.getElementById('data-val').innerText = saveData.dataChips; }
+        // --- DIALOGUE ---
+        function startDialogue(speaker, text, onFinish) { document.getElementById('dialogue-overlay').style.display='flex'; document.getElementById('controls-area').style.opacity='0'; state.turn='dialogue'; document.getElementById('char-name-disp').innerText = speaker; dialogueState.text = text; dialogueState.index = 0; dialogueState.isTyping = true; dialogueState.nextAction = onFinish; document.getElementById('story-text').innerText = ''; document.getElementById('dialogue-btn').style.opacity = '0.5'; if(dialogueState.timer) clearTimeout(dialogueState.timer); typeWriter(); }
+        let dialogueState = { text: '', index: 0, isTyping: false, timer: null }; function typeWriter() { if(dialogueState.index < dialogueState.text.length) { document.getElementById('story-text').innerText += dialogueState.text.charAt(dialogueState.index); dialogueState.index++; dialogueState.timer = setTimeout(typeWriter, 30); } else finishTyping(); } function finishTyping() { if(dialogueState.timer) clearTimeout(dialogueState.timer); document.getElementById('story-text').innerText = dialogueState.text; dialogueState.isTyping = false; document.getElementById('dialogue-btn').style.opacity = '1'; } function handleDialogueClick() { if(dialogueState.isTyping) finishTyping(); else { document.getElementById('dialogue-overlay').style.display='none'; document.getElementById('controls-area').style.opacity='1'; if(dialogueState.nextAction) dialogueState.nextAction(); } }
+
+        // --- RENDER & FX ---
+        function updateHUD() { document.getElementById('hp-bar').style.width = (state.hp/state.maxHp*100)+'%'; document.getElementById('mp-bar').style.width = (state.mp/state.maxMp*100)+'%'; document.getElementById('sector-display').innerText = `${state.sector}-${state.node}`; document.getElementById('wave-display').innerText = `ONDA ${state.waveCurrent}/${state.wavesTotal}`; document.getElementById('essence-val').innerText = saveData.essence; }
         function addLog(msg, type) { const c = document.getElementById('battle-log'); const d = document.createElement('div'); d.className = `log-entry log-${type}`; d.innerText = `> ${msg}`; c.prepend(d); if(c.children.length>6)c.lastChild.remove(); }
         function showToast(msg, color='#fff') { const el = document.getElementById('toast-msg'); el.innerText = msg; el.style.color = color; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 1000); }
         function screenShake(amount) { state.shake = amount; }
         class Particle { constructor(x, y, color, speed, size) { this.x = x; this.y = y; this.color = color; this.size = size; this.vx = (Math.random()-0.5)*speed; this.vy = (Math.random()-0.5)*speed; this.life = 1.0; } update() { this.x+=this.vx; this.y+=this.vy; this.life-=0.03; } draw(ctx) { ctx.globalAlpha = Math.max(0,this.life); ctx.fillStyle=this.color; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1.0; } }
         function spawnParticles(x, y, color, count) { for(let i=0; i<count; i++) state.particles.push(new Particle(x, y, color, 15, Math.random()*4+1)); }
-        function drawGame(time) { ctx.fillStyle = '#050505'; ctx.fillRect(0,0,width,height); let horizon = height * 0.4; let gridColor = state.sector === 1 ? '#00ff00' : (state.sector === 2 ? '#ff4400' : '#aa00ff'); ctx.fillStyle = '#000'; ctx.fillRect(0,0,width,horizon); ctx.save(); ctx.beginPath(); ctx.rect(0, horizon, width, height-horizon); ctx.clip(); ctx.strokeStyle = gridColor; ctx.globalAlpha = 0.3; ctx.lineWidth = 1; for(let i=-20; i<=20; i++) { let x1 = width/2 + i * 40; let x2 = width/2 + i * 200; ctx.beginPath(); ctx.moveTo(x1, horizon); ctx.lineTo(x2, height); ctx.stroke(); } let offset = (Date.now() / 5) % 50; for(let i=0; i<20; i++) { let y = horizon + (i * 30 + offset); if(y < height) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); } } ctx.restore(); ctx.globalAlpha = 1.0; ctx.save(); if(state.shake>0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake*=0.9; if(state.shake<0.5)state.shake=0; } const cls = CLASS_STATS[state.currentClass]; const px = width*0.25; const py = height*0.75; ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(px, py+35, 40, 10, 0, 0, Math.PI*2); ctx.fill(); if(assets.player.complete && assets.player.naturalWidth > 0) { ctx.shadowBlur=20; ctx.shadowColor=cls.color; ctx.drawImage(assets.player, px - 50, py - 50, 100, 100); ctx.shadowBlur=0; } else { ctx.shadowBlur=20; ctx.shadowColor=cls.color; ctx.fillStyle=cls.color; ctx.beginPath(); ctx.arc(px,py,30,0,Math.PI*2); ctx.fill(); } if(state.enemyHp > 0 && document.getElementById('map-overlay').style.display === 'none') { const ex = width*0.75; const ey = height*0.45; const hpPct = state.enemyHp/state.enemyMaxHp; const bossColor = state.isBoss ? '#b026ff' : '#ff4444'; ctx.shadowBlur=0; ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(ex, ey + (state.isBoss?100:60), (state.isBoss?80:50), 10, 0, 0, Math.PI*2); ctx.fill(); const scaleFactor = 0.7; ctx.save(); ctx.translate(ex,ey); ctx.scale(scaleFactor, scaleFactor); if(assets.enemy.complete && assets.enemy.naturalWidth > 0) { let spriteSize = state.isBoss ? 250 : 180; ctx.shadowBlur=30; ctx.shadowColor=bossColor; ctx.drawImage(assets.enemy, -spriteSize/2, -spriteSize/2, spriteSize, spriteSize); } else { ctx.fillStyle = bossColor; ctx.fillRect(-50, -50, 100, 100); } ctx.restore(); ctx.shadowBlur=0; ctx.fillStyle='#333'; ctx.fillRect(ex-40,ey-20,80,6); ctx.fillStyle=bossColor; ctx.fillRect(ex-40,ey-20,80*hpPct,6); } state.particles.forEach((p,i)=>{ p.update(); p.draw(ctx); if(p.life<=0)state.particles.splice(i,1); }); ctx.restore(); gameLoopId = requestAnimationFrame(() => drawGame(Date.now())); }
-        
-        function openShopFromMap() { document.getElementById('map-overlay').style.display = 'none'; document.getElementById('shop-overlay').style.display = 'flex'; updateShopUI(); }
-        function closeShop() { document.getElementById('shop-overlay').style.display = 'none'; updatePlayerStats(); showMap(); }
-        function updateShopUI() { document.getElementById('shop-essence-val').innerText = saveData.essence; ['atk', 'hp', 'mp', 'crit', 'def', 'spd'].forEach(s => { const lvl = saveData.skills[s]; const cost = 10 * (lvl + 1); document.getElementById(`lvl-${s}`).innerText = lvl; let pct = Math.min(100, (lvl/20)*100); document.getElementById(`bar-${s}`).style.width = `${pct}%`; const btn = document.getElementById(`buy-${s}`); btn.innerText = `CUSTO: ${cost}`; if(saveData.essence >= cost) { btn.classList.add('can-buy'); btn.disabled = false; } else { btn.classList.remove('can-buy'); btn.disabled = true; } }); }
-        function buyUpgrade(type) { const cost = 10 * (saveData.skills[type] + 1); if(saveData.essence >= cost) { saveData.essence -= cost; saveData.skills[type]++; saveGame(); updateShopUI(); } }
-        function startDialogue(speaker, text, onFinish) { onFinish(); } // Placeholder
+
+        function drawGame(time) {
+            // SAFE DRAW LOOP (Anti-Crash)
+            try {
+                ctx.fillStyle = '#050505'; ctx.fillRect(0,0,width,height);
+                let horizon = height * 0.4; let gridColor = state.sector === 1 ? '#00ff00' : (state.sector === 2 ? '#ff4400' : '#aa00ff');
+                ctx.fillStyle = '#000'; ctx.fillRect(0,0,width,horizon);
+                ctx.save(); ctx.beginPath(); ctx.rect(0, horizon, width, height-horizon); ctx.clip();
+                ctx.strokeStyle = gridColor; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+                for(let i=-20; i<=20; i++) { let x1 = width/2 + i * 40; let x2 = width/2 + i * 200; ctx.beginPath(); ctx.moveTo(x1, horizon); ctx.lineTo(x2, height); ctx.stroke(); }
+                let offset = (Date.now() / 5) % 50; for(let i=0; i<20; i++) { let y = horizon + (i * 30 + offset); if(y < height) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); } }
+                ctx.restore(); ctx.globalAlpha = 1.0;
+                ctx.save(); if(state.shake>0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake*=0.9; if(state.shake<0.5)state.shake=0; }
+                
+                // DRAW PLAYER (FALLBACK IF NOT LOADED)
+                const cls = CLASS_STATS[state.currentClass]; const px = width*0.25; const py = height*0.75;
+                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(px, py+35, 40, 10, 0, 0, Math.PI*2); ctx.fill();
+                if(assets.player.loaded) {
+                    ctx.shadowBlur=20; ctx.shadowColor=cls.color; ctx.drawImage(assets.player, px - 50, py - 50, 100, 100); ctx.shadowBlur=0;
+                } else {
+                    // Placeholder Player
+                    ctx.shadowBlur=20; ctx.shadowColor=cls.color; ctx.strokeStyle=cls.color; ctx.lineWidth=3;
+                    ctx.beginPath(); ctx.arc(px, py, 30, 0, Math.PI*2); ctx.stroke();
+                    ctx.font="20px Arial"; ctx.fillStyle=cls.color; ctx.fillText("P", px-6, py+6);
+                }
+
+                // DRAW ENEMY (FALLBACK IF NOT LOADED)
+                if(state.enemyHp > 0 && document.getElementById('dialogue-overlay').style.display === 'none' && document.getElementById('map-overlay').style.display === 'none') {
+                    const ex = width*0.75; const ey = height*0.45; const hpPct = state.enemyHp/state.enemyMaxHp; const bossColor = state.isBoss ? '#b026ff' : '#ff4444';
+                    ctx.shadowBlur=0; ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(ex, ey + (state.isBoss?100:60), (state.isBoss?80:50), 10, 0, 0, Math.PI*2); ctx.fill();
+                    const scaleFactor = 0.7; ctx.save(); ctx.translate(ex,ey); ctx.scale(scaleFactor, scaleFactor);
+                    
+                    if(assets.enemy.loaded) {
+                        let spriteSize = state.isBoss ? 250 : 180; ctx.shadowBlur=30; ctx.shadowColor=bossColor; 
+                        ctx.drawImage(assets.enemy, -spriteSize/2, -spriteSize/2, spriteSize, spriteSize);
+                    } else {
+                        // Placeholder Enemy
+                        ctx.shadowBlur=30; ctx.shadowColor=bossColor; ctx.fillStyle=bossColor;
+                        ctx.fillRect(-40, -40, 80, 80);
+                    }
+                    ctx.restore();
+                    // Enemy HP Bar
+                    ctx.shadowBlur=0; ctx.fillStyle='#333'; ctx.fillRect(ex-40,ey-20,80,6); ctx.fillStyle=bossColor; ctx.fillRect(ex-40,ey-20,80*hpPct,6);
+                }
+                
+                state.particles.forEach((p,i)=>{ p.update(); p.draw(ctx); if(p.life<=0)state.particles.splice(i,1); }); ctx.restore();
+            } catch(e) {
+                console.error("Render error:", e);
+            }
+            gameLoopId = requestAnimationFrame(() => drawGame(Date.now()));
+        }
     </script>
 </body>
 </html>
