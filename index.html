@@ -3,100 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon RPG: V33 Tactical UI</title>
+    <title>Neon RPG: V36 Tactical Combat</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background-color: #050505; overflow: hidden; font-family: 'Rajdhani', sans-serif; height: 100vh; width: 100vw; color: white; }
-        canvas { display: block; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+        canvas { display: block; width: 100%; height: 100%; }
         
         .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; z-index: 10; }
         
-        /* HUD */
-        .hud-top { width: 100%; max-width: 500px; margin: 0 auto; pointer-events: auto; display: flex; justify-content: space-between; align-items: flex-start; text-shadow: 0 2px 5px rgba(0,0,0,0.8); position: relative; }
+        /* HUD V25 */
+        .hud-top { width: 100%; max-width: 500px; margin: 0 auto; pointer-events: auto; display: flex; justify-content: space-between; align-items: flex-start; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
         .bars-area { width: 60%; }
         .stats-area { width: 35%; text-align: right; font-family: 'Orbitron'; }
         
-        .exit-btn { position: absolute; top: -10px; right: -10px; background: rgba(255, 0, 0, 0.3); border: 1px solid #ff4444; color: #ff4444; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); }
         .sector-indicator { font-size: 18px; color: #fff; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; }
         .node-indicator { font-size: 12px; color: #aaa; margin-bottom: 5px; }
         .essence-box { color: #b026ff; font-weight: bold; font-size: 16px; text-shadow: 0 0 15px #b026ff; }
 
-        .bar-container { width: 100%; height: 14px; background: rgba(20, 20, 20, 0.8); border: 1px solid #444; border-radius: 4px; margin-bottom: 8px; overflow: hidden; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .bar-container { margin-bottom: 6px; position: relative; background: rgba(0,0,0,0.6); border-radius: 4px; border: 1px solid #333; height: 12px; overflow: hidden; }
         .bar-fill { height: 100%; width: 100%; transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
         .hp { background: linear-gradient(90deg, #ff4444, #ff0055); box-shadow: 0 0 10px #ff0055; }
         .mp { background: linear-gradient(90deg, #44ccff, #0088ff); box-shadow: 0 0 10px #0088ff; }
         
-        /* CONTROLS (LAYOUT DUPLO) */
-        .controls-container { width: 100%; max-width: 500px; align-self: center; pointer-events: auto; min-height: 80px; }
+        /* CONTROLS AREA (CONTAINER) */
+        .controls-wrapper { width: 100%; max-width: 450px; align-self: center; pointer-events: auto; margin-bottom: 15px; min-height: 80px; }
+
+        /* GRID PRINCIPAL (3 Botões) */
+        #main-controls { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 10px; }
         
-        /* Menu Principal (3 Botões) */
-        .main-menu { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        
-        /* Menu de Skills (4 Botões - Skills + Voltar) */
-        .skill-menu { display: none; grid-template-columns: 1fr 1fr 1fr 0.5fr; gap: 8px; }
-        
+        /* GRID DE SKILLS (3 Skills + Voltar) */
+        #skill-controls { display: none; grid-template-columns: 1fr 1fr 1fr 0.4fr; gap: 8px; }
+
         .btn { 
-            background: rgba(10, 15, 20, 0.95); border: 1px solid #444; color: #fff; 
-            padding: 20px 0; border-radius: 8px; 
-            font-weight: 800; font-size: 14px; font-family: 'Orbitron'; letter-spacing: 1px; 
+            background: rgba(10, 10, 15, 0.9); border: 2px solid #333; color: #fff; 
+            padding: 15px 0; border-radius: 12px; 
+            font-weight: 800; font-size: 13px; font-family: 'Orbitron'; letter-spacing: 1px; 
             cursor: pointer; backdrop-filter: blur(10px); transition: all 0.1s; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .btn:active { transform: scale(0.96); border-color: #fff; }
-        .btn span { font-size: 10px; color: #aaa; margin-top: 4px; font-family: 'Share Tech Mono'; }
+        .btn:active { transform: scale(0.96); }
+        .btn span { font-size: 9px; color: #aaa; margin-top: 4px; font-family: 'Rajdhani'; font-weight: bold; }
+
+        /* Cores Específicas */
+        .btn-combat { border-color: #ff4444; color: #ffcccc; box-shadow: 0 0 10px rgba(255, 68, 68, 0.2); }
+        .btn-heal { border-color: #00ff00; color: #ccffcc; }
+        .btn-rest { border-color: #ffff00; color: #ffffcc; }
+        .btn-back { border-color: #fff; background: #444; }
+
+        .skill-btn { border-color: #00ffff; color: #e0ffff; }
+        .skill-btn:nth-child(2) { border-color: #b026ff; color: #eebbff; } /* Skill 2 cor diferente */
         
-        /* Estilos Específicos */
-        .btn-combat { border-bottom: 4px solid #ff4444; color: #ffcccc; }
-        .btn-heal { border-bottom: 4px solid #00ff00; color: #ccffcc; }
-        .btn-rest { border-bottom: 4px solid #ffff00; color: #ffffcc; }
-        .btn-back { border-bottom: 4px solid #fff; background: #333; }
+        .btn:disabled, .btn.low-mana { opacity: 0.4; filter: grayscale(1); border-color: #444; }
+
+        /* SHOP & PROFILE */
+        #shop-overlay, #profile-overlay { 
+            position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: rgba(0, 0, 0, 0.9); z-index: 100; 
+            display: none; flex-direction: column; align-items: center; padding: 20px; 
+            overflow-y: auto; pointer-events: auto; backdrop-filter: blur(5px);
+        }
         
-        /* Skills Colors */
-        .skill-1 { border-color: #ff4444; }
-        .skill-2 { border-color: #00ffff; }
-        .skill-3 { border-color: #b026ff; }
-
-        .btn:disabled, .btn.low-mana { opacity: 0.4; filter: grayscale(1); border-color: #444; cursor: not-allowed; }
-
-        /* OUTROS PAINÉIS (IGUAIS V25/V32) */
-        #map-overlay, #shop-overlay, #profile-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(10, 10, 15, 0.98); z-index: 80; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; pointer-events: auto; backdrop-filter: blur(10px); }
-        .map-header { text-align: center; margin: 20px 0; width: 100%; max-width: 400px; }
-        .map-title h1 { font-family: 'Orbitron'; color: #00ffff; font-size: 20px; letter-spacing: 2px; }
-        .header-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 15px; }
-        .menu-btn { padding: 10px; border-radius: 6px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; font-size: 11px; border: 1px solid #555; background: rgba(255,255,255,0.05); color: white; transition: 0.2s; }
-        .menu-btn:active { transform: scale(0.95); }
+        .shop-header { text-align: center; margin-bottom: 20px; margin-top: 30px; width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center;}
+        .shop-title h1 { font-family: 'Orbitron'; color: #ff4444; font-size: 24px; text-shadow: 0 0 15px #ff4444; margin:0; }
+        .shop-essence { font-size: 24px; color: #b026ff; font-weight: bold; font-family: 'Orbitron'; }
         
-        /* INVENTORY / SHOP STYLES */
-        .shop-header h1 { font-family: 'Orbitron'; color: #ff4444; font-size: 24px; margin-bottom: 10px; margin-top: 20px; }
-        .shop-essence { font-size: 36px; color: #b026ff; font-weight: bold; font-family: 'Orbitron'; margin-bottom: 20px; }
-        .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 420px; margin-bottom: 20px; }
-        .skill-card { background: rgba(255, 255, 255, 0.03); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-        .buy-btn { width: 100%; padding: 8px; border-radius: 4px; background: #222; border: 1px solid #444; color: #666; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; margin-top:5px;}
-        .buy-btn.can-buy { border-color: #fff; background: rgba(255,255,255,0.15); color: #fff; }
-        #restart-btn { width: 100%; max-width: 420px; padding: 15px; background: #333; border: 1px solid #fff; color: white; font-family: 'Orbitron'; cursor: pointer; margin-bottom: 20px; }
+        .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; margin-bottom: 30px; }
+        .skill-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        
+        .sc-atk { border-color: #00f0ff; } .sc-hp { border-color: #bd00ff; } .sc-mp { border-color: #a020f0; } 
+        .sc-crt { border-color: #00ff00; } .sc-def { border-color: #0088ff; } .sc-spd { border-color: #ffff00; }
 
-        /* START SCREEN */
-        #start-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #050505; z-index: 150; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; pointer-events: auto; }
-        .class-container { display: grid; gap: 15px; width: 100%; max-width: 400px; margin-top: 20px; }
-        .class-btn { padding: 20px; border: 1px solid; background: rgba(255,255,255,0.05); color: white; border-radius: 8px; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
-
-        /* MAP GRID */
-        .map-grid { display: flex; flex-direction: column-reverse; gap: 20px; width: 100%; max-width: 350px; padding-bottom: 50px; position: relative; margin-top: 20px; }
-        .map-node { background: #111; border: 2px solid #444; width: 100%; padding: 15px; border-radius: 8px; position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; opacity: 0.5; filter: grayscale(1); pointer-events: none; }
-        .map-node.unlocked { opacity: 1; filter: grayscale(0); border-color: #00ff00; cursor: pointer; pointer-events: auto; }
-        .map-node.active { box-shadow: 0 0 15px rgba(0, 255, 0, 0.4); border-color: #fff; }
+        .buy-btn { width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; border: 1px solid #444; background: rgba(0,0,0,0.5); color: #fff; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; }
+        .buy-btn.can-buy { border-color: #fff; background: rgba(255,255,255,0.1); }
+        
+        #restart-btn { width: 100%; max-width: 400px; padding: 15px; background: rgba(20,0,0,0.8); border: 2px solid #ff0044; color: #ff0044; font-family: 'Orbitron'; font-weight: bold; border-radius: 8px; cursor: pointer; }
 
         /* PROFILE */
-        #profile-overlay .profile-card { background: rgba(255,255,255,0.05); border: 1px solid #00ffff; padding: 20px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; margin-top: 40px; }
-        .stat-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin-top: 20px; }
-        .stat-item { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; color:white; }
+        .profile-card-box { background: rgba(20,20,30,0.9); border: 1px solid #00ffff; padding: 25px; border-radius: 15px; width: 100%; max-width: 350px; margin-top: 50px; text-align: center; }
+        .stat-list { text-align: left; margin-top: 20px; font-family: 'Rajdhani'; font-size: 18px; }
+        .stat-item { border-bottom: 1px solid #333; padding: 8px 0; display: flex; justify-content: space-between; }
 
-        .toast { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold; color: #fff; text-shadow: 0 0 10px #fff; opacity: 0; transition: opacity 0.5s; z-index: 80; pointer-events: none; }
+        /* START */
+        #start-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #050505; z-index: 150; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .class-container { display: grid; gap: 15px; width: 100%; max-width: 400px; margin-top: 20px; }
+        .class-btn { padding: 15px; border: 1px solid; background: rgba(255,255,255,0.05); color: white; border-radius: 5px; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+
+        /* MAP */
+        #map-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #080808; z-index: 80; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; }
+        .map-header { width: 100%; max-width: 400px; text-align: center; margin-top: 20px; }
+        .header-buttons { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .mini-btn { padding: 8px 15px; border-radius: 5px; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; border: 1px solid; background: rgba(0,0,0,0.5); color: white; }
+        .map-grid { display: flex; flex-direction: column-reverse; gap: 20px; width: 100%; max-width: 350px; padding-bottom: 50px; }
+        .map-node { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; opacity: 0.5; }
+        .map-node.unlocked { opacity: 1; border-color: #00ff00; cursor: pointer; }
+        .map-node.active { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+        .toast { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold; color: #fff; text-shadow: 0 0 10px #fff; opacity: 0; transition: opacity 0.5s; pointer-events: none; z-index: 300; }
         .toast.show { opacity: 1; transform: translate(-50%, -80%); }
     </style>
 </head>
@@ -105,20 +111,20 @@
 
     <div id="start-overlay">
         <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 15px; font-size: 32px; font-family:'Orbitron'; color:white">NEON PROTOCOL</h1>
-        <p style="color:#fff; font-size:12px; font-weight: bold; font-family: 'Orbitron';">SELECIONE MÓDULO:</p>
+        <p style="color:#aaa; font-size:12px;">V36 TACTICAL ENGINE</p>
         <div class="class-container">
-            <button class="class-btn" style="border-color:#ff0055" onclick="chooseClass('samurai')"><div><div style="font-weight:bold; color:#ff0055">LÂMINA</div><small>Dano Crítico</small></div><div style="font-size:24px">⚔️</div></button>
-            <button class="class-btn" style="border-color:#00ffff" onclick="chooseClass('mage')"><div><div style="font-weight:bold; color:#00ffff">CÓDIGO</div><small>Magia & Mana</small></div><div style="font-size:24px">✨</div></button>
+            <button class="class-btn" style="border-color:#ff0055" onclick="chooseClass('samurai')"><div><div style="font-weight:bold; color:#ff0055">LÂMINA</div><small>Crítico + Dano</small></div><div style="font-size:24px">⚔️</div></button>
+            <button class="class-btn" style="border-color:#00ffff" onclick="chooseClass('mage')"><div><div style="font-weight:bold; color:#00ffff">CÓDIGO</div><small>Magia + MP</small></div><div style="font-size:24px">✨</div></button>
             <button class="class-btn" style="border-color:#00ff00" onclick="chooseClass('tank')"><div><div style="font-weight:bold; color:#00ff00">FIREWALL</div><small>Defesa Alta</small></div><div style="font-size:24px">🛡️</div></button>
         </div>
     </div>
 
     <div id="map-overlay">
         <div class="map-header">
-            <div class="map-title"><h1>MAPA DE REDE</h1><p id="map-sector-name">SETOR 1: GRID</p></div>
+            <h1 style="font-family:'Orbitron'; color:#00ffff; margin-bottom:10px;">MAPA DE REDE</h1>
             <div class="header-buttons">
-                <button class="menu-btn" style="border-color:#00ffff; color:#00ffff" onclick="openProfile()">PERFIL 👤</button>
-                <button class="menu-btn" style="border-color:#b026ff; color:#e0b0ff" onclick="openShopFromMap()">LOJA 🛒</button>
+                <button class="mini-btn" style="border-color:#00ffff; color:#00ffff" onclick="openProfile()">PERFIL 👤</button>
+                <button class="mini-btn" style="border-color:#b026ff; color:#e0b0ff" onclick="openShopFromMap()">LOJA 🛒</button>
             </div>
         </div>
         <div class="map-grid" id="map-grid"></div>
@@ -127,135 +133,161 @@
     <div class="ui-layer" id="game-ui" style="display:none;">
         <div class="hud-top">
             <div class="bars-area">
-                <div class="bar-container"><div id="hp-bar" class="bar-fill hp"></div></div>
-                <div class="bar-container"><div id="mp-bar" class="bar-fill mp"></div></div>
+                <div class="bar-container"><div class="bar-bg"><div id="hp-bar" class="bar-fill hp"></div></div></div>
+                <div class="bar-container"><div class="bar-bg"><div id="mp-bar" class="bar-fill mp"></div></div></div>
             </div>
             <div class="stats-area">
-                <div class="sector-indicator" id="sector-display">1-1</div>
-                <div class="node-indicator" id="wave-display">ONDAS: 1/3</div>
+                <div class="sector-indicator" id="sector-val">1-1</div>
                 <div class="essence-box">🟣 <span id="essence-val">0</span></div>
             </div>
-            <button class="exit-btn" onclick="exitBattle()">X</button>
         </div>
         <div id="toast-msg" class="toast hidden"></div>
         
-        <div class="controls-container">
-            <div id="controls-main" class="main-menu">
-                <button class="btn btn-combat" onclick="showSkills()">
-                    ⚔️ COMBATE
-                    <span>ABRIR SKILLS</span>
+        <div class="controls-wrapper">
+            <div id="main-controls">
+                <button class="btn btn-combat" onclick="openSkillMenu()">
+                    ⚔️ TÁTICAS
+                    <span>SKILLS DE CLASSE</span>
                 </button>
                 <button class="btn btn-heal" id="btn-heal" onclick="performAction('heal')">
-                    ❤️ CURAR
-                    <span>15 MP</span>
+                    ❤️ REPARO
+                    <span>20 MP</span>
                 </button>
                 <button class="btn btn-rest" onclick="performAction('rest')">
-                    💤 DESCANSO
+                    💤 RECARGA
                     <span>RECUPERA MP</span>
                 </button>
             </div>
 
-            <div id="controls-skills" class="skill-menu">
-                <button class="btn skill-1" id="btn-s1" onclick="performSkill(1)">S1</button>
-                <button class="btn skill-2" id="btn-s2" onclick="performSkill(2)">S2</button>
-                <button class="btn skill-3" id="btn-s3" onclick="performSkill(3)">S3</button>
-                <button class="btn btn-back" onclick="hideSkills()">↩️</button>
+            <div id="skill-controls">
+                <button class="btn skill-btn" id="s1-btn" onclick="useSkill(0)">SKILL 1</button>
+                <button class="btn skill-btn" id="s2-btn" onclick="useSkill(1)">SKILL 2</button>
+                <button class="btn skill-btn" id="s3-btn" onclick="useSkill(2)">SKILL 3</button>
+                <button class="btn btn-back" onclick="closeSkillMenu()">↩️</button>
             </div>
         </div>
     </div>
 
     <div id="shop-overlay">
-        <div class="shop-header"><h1>MERCADO NEGRO</h1><div class="shop-essence">🟣 <span id="shop-essence-val">0</span></div></div>
-        <div class="skill-grid" id="shop-grid">
-            </div>
-        <button id="restart-btn" onclick="closeShop()">VOLTAR AO MAPA</button>
+        <div class="shop-header">
+            <div class="shop-title"><h1>SINAL PERDIDO</h1></div>
+            <div class="shop-essence">🟣 <span id="shop-essence-val">0</span></div>
+        </div>
+        <div class="skill-grid" id="shop-grid"></div>
+        <button id="restart-btn" onclick="closeShop()">VOLTAR AO JOGO</button>
     </div>
 
     <div id="profile-overlay">
-        <div class="profile-card">
-            <h2 style="color:#00ffff; font-family:'Orbitron'">PERFIL</h2>
-            <p id="prof-class" style="color:#aaa; font-family:'Share Tech Mono'">...</p>
-            <div class="stat-list">
-                <div class="stat-item">⚔️ FOR: <span id="prof-atk">0</span></div>
-                <div class="stat-item">❤️ HP: <span id="prof-hp">0</span></div>
-                <div class="stat-item">✨ MP: <span id="prof-mp">0</span></div>
-                <div class="stat-item">🛡️ DEF: <span id="prof-def">0</span></div>
-                <div class="stat-item">⚡ SPD: <span id="prof-spd">0</span></div>
-                <div class="stat-item">🍀 CRT: <span id="prof-crit">0</span></div>
-            </div>
+        <div class="profile-card-box">
+            <h2 style="color:#00ffff; font-family:'Orbitron'; margin-bottom:20px;">PERFIL</h2>
+            <div id="prof-stats-list"></div>
+            <button class="buy-btn" style="margin-top:20px; border-color:#ffaa00; color:#ffaa00; padding:15px;" onclick="changeClass()">TROCAR CLASSE 🔄</button>
+            <button class="buy-btn" style="margin-top:10px;" onclick="closeProfile()">VOLTAR</button>
         </div>
-        <button id="restart-btn" style="margin-top:20px; border-color:#00ffff; color:#00ffff" onclick="closeProfile()">VOLTAR</button>
     </div>
 
     <script>
-        // --- CONFIG ---
-        const SECTOR_NAMES = { 1: "GRID", 2: "FIREWALL", 3: "NÚCLEO" };
-        const SKILLS = {
-            samurai: [{name:"CORTE", cost:0}, {name:"POSTURA", cost:0}, {name:"GOLPE", cost:20}],
-            mage: [{name:"RAIO", cost:10}, {name:"ESCUDO", cost:15}, {name:"EXPLOSÃO", cost:40}],
-            tank: [{name:"BASH", cost:0}, {name:"FORTIFY", cost:10}, {name:"COUNTER", cost:15}]
-        };
+        // --- DADOS DO JOGO ---
         const CLASS_STATS = { 
             samurai: { name: "Lâmina", color: "#ff0055", hpMult: 0.9, mpMult: 0.8, atkBonus: 8, defBonus: 0, critBonus: 0.15 }, 
             mage: { name: "Código", color: "#00ffff", hpMult: 0.7, mpMult: 1.6, atkBonus: 2, defBonus: 0, critBonus: 0 }, 
             tank: { name: "Firewall", color: "#00ff00", hpMult: 1.5, mpMult: 0.6, atkBonus: -2, defBonus: 4, critBonus: 0 } 
         };
 
-        // --- SAVE SYSTEM ---
-        const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, def: 0, spd: 0, crit: 0 }, progress: { sector: 1, node: 1 } };
-        let saveData = JSON.parse(localStorage.getItem('neonRpgV33')) || DEFAULT_SAVE;
-        if(!saveData.progress) saveData.progress = {sector:1, node:1};
-        function saveGame() { localStorage.setItem('neonRpgV33', JSON.stringify(saveData)); }
+        // O LEQUE DE HABILIDADES
+        const SKILLS = {
+            samurai: [
+                { name: "CORTE VELOZ", cost: 0, dmgMult: 1.0, desc: "Ataque Rápido" },
+                { name: "POSTURA", cost: 10, dmgMult: 0, isBuff: true, desc: "Defesa + Contra-Ataque" },
+                { name: "LÂMINA MORTAL", cost: 25, dmgMult: 2.5, desc: "Dano Massivo" }
+            ],
+            mage: [
+                { name: "DRENO DE DADOS", cost: 0, dmgMult: 0.5, isDrain: true, desc: "Rouba MP" },
+                { name: "FIREWALL", cost: 15, dmgMult: 1.5, desc: "Dano de Fogo" },
+                { name: "GLITCH", cost: 35, dmgMult: 3.0, desc: "Erro Fatal no Inimigo" }
+            ],
+            tank: [
+                { name: "ESMAGAR", cost: 0, dmgMult: 0.8, desc: "Gera Ameaça" },
+                { name: "BARREIRA", cost: 15, dmgMult: 0, isBuff: true, desc: "Defesa Extrema" },
+                { name: "REFLETIR", cost: 20, dmgMult: 1.2, desc: "Dvolve Dano" }
+            ]
+        };
 
-        // --- STATE ---
+        const SECTOR_NAMES = { 1: "GRID", 2: "FIREWALL", 3: "NÚCLEO" };
+        
+        // SAVE SYSTEM
+        const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, def: 0, spd: 0, crit: 0 }, progress: { sector: 1, node: 1 } };
+        let saveData = JSON.parse(localStorage.getItem('neonRpgV36')) || DEFAULT_SAVE;
+        if(!saveData.progress) saveData.progress = {sector:1, node:1};
+        function saveGame() { localStorage.setItem('neonRpgV36', JSON.stringify(saveData)); }
+
+        // STATE
         let assets = { player: new Image(), enemy: new Image() };
         let state = { turn: 'player', sector: 1, node: 1, wavesTotal: 1, waveCurrent: 1, hp: 0, maxHp: 0, mp: 0, maxMp: 0, enemyHp: 0, enemyMaxHp: 0, isBoss: false, particles: [], shake: 0, runEssence: 0, currentClass: 'samurai', activeBuffs: {} };
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
-        let width, height, gameLoopId;
+        let width, height;
 
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
 
-        // --- ASSET LOADER SAFE ---
-        function loadSprite(imgObj, url) { imgObj.src = url; } // Simple load, no await
+        function loadSprite(imgObj, url) { imgObj.src = url; }
 
-        // --- CORE ---
+        // --- CORE FUNCTIONS ---
         function chooseClass(className) {
             state.currentClass = className;
             document.getElementById('start-overlay').style.display='none';
             loadSprite(assets.player, `https://robohash.org/Neon${className}?set=set1`);
-            initStats(); showMap();
+            
+            // Configurar botões de skill com base na classe
+            updateSkillButtons();
+            
+            initStats(); 
+            // Se trocou de classe, cura tudo
+            state.hp = state.maxHp;
+            state.mp = state.maxMp;
+            
+            showMap();
             requestAnimationFrame(drawGame);
+        }
+
+        function changeClass() {
+            closeProfile();
+            document.getElementById('shop-overlay').style.display='none';
+            document.getElementById('game-ui').style.display='none';
+            document.getElementById('start-overlay').style.display='flex';
         }
 
         function initStats() {
             updatePlayerStats();
             state.sector = saveData.progress.sector; state.turn = 'player';
-            updateSkillButtons(); updateHUD();
+            updateHUD();
         }
 
         function updatePlayerStats() {
             let cls = CLASS_STATS[state.currentClass];
-            let baseHp = 100 + (saveData.skills.hp * 20); state.maxHp = Math.floor(baseHp * cls.hpMult); state.hp = state.maxHp;
-            let baseMp = 50 + (saveData.skills.mp * 15); state.maxMp = Math.floor(baseMp * cls.mpMult); state.mp = state.maxMp;
+            let baseHp = 100 + (saveData.skills.hp * 20); state.maxHp = Math.floor(baseHp * cls.hpMult);
+            let baseMp = 50 + (saveData.skills.mp * 15); state.maxMp = Math.floor(baseMp * cls.mpMult);
+            state.hp = Math.min(state.hp, state.maxHp);
+            state.mp = Math.min(state.mp, state.maxMp);
         }
 
-        // --- MENU LOGIC ---
-        function showSkills() {
-            if(state.turn !== 'player') return;
-            document.getElementById('controls-main').style.display = 'none';
-            document.getElementById('controls-skills').style.display = 'grid';
-        }
-        function hideSkills() {
-            document.getElementById('controls-skills').style.display = 'none';
-            document.getElementById('controls-main').style.display = 'grid';
-        }
+        // --- SKILL MENU LOGIC ---
         function updateSkillButtons() {
             let skills = SKILLS[state.currentClass];
-            for(let i=0; i<3; i++) {
-                let btn = document.getElementById(`btn-s${i+1}`);
-                btn.innerHTML = `${skills[i].name}<span>${skills[i].cost} MP</span>`;
-            }
+            document.getElementById('s1-btn').innerHTML = `${skills[0].name}<br><span>${skills[0].cost} MP</span>`;
+            document.getElementById('s2-btn').innerHTML = `${skills[1].name}<br><span>${skills[1].cost} MP</span>`;
+            document.getElementById('s3-btn').innerHTML = `${skills[2].name}<br><span>${skills[2].cost} MP</span>`;
+        }
+
+        function openSkillMenu() {
+            if(state.turn !== 'player') return;
+            document.getElementById('main-controls').style.display = 'none';
+            document.getElementById('skill-controls').style.display = 'grid';
+        }
+
+        function closeSkillMenu() {
+            document.getElementById('skill-controls').style.display = 'none';
+            document.getElementById('main-controls').style.display = 'grid';
         }
 
         // --- BATTLE ACTIONS ---
@@ -263,66 +295,86 @@
             if(state.turn !== 'player') return;
 
             if(type === 'heal') {
-                if(state.mp < 15) { showToast("SEM MANA", "#44ccff"); return; }
-                state.mp -= 15;
+                if(state.mp < 20) { showToast("SEM MANA", "#44ccff"); return; }
+                state.mp -= 20;
                 let heal = 40 + (saveData.skills.hp * 5);
                 state.hp = Math.min(state.maxHp, state.hp + heal);
                 spawnParticles(width*0.25, height*0.7, '#00ff00', 30);
-                showToast(`+${heal} HP`, "#00ff00");
-                updateHUD();
-                state.turn = 'enemy'; setTimeout(enemyTurn, 800);
+                showToast(`REPARO: +${heal}`, "#00ff00");
+                endPlayerTurn();
             }
             else if(type === 'rest') {
                 let rec = 30 + (saveData.skills.mp * 5);
                 state.mp = Math.min(state.maxMp, state.mp + rec);
-                showToast(`+${rec} MP`, "#ffff00");
-                updateHUD();
-                state.turn = 'enemy'; setTimeout(enemyTurn, 800);
+                showToast(`RECARGA: +${rec} MP`, "#ffff00");
+                endPlayerTurn();
             }
         }
 
-        function performSkill(idx) {
+        function useSkill(index) {
             if(state.turn !== 'player') return;
-            let skill = SKILLS[state.currentClass][idx-1];
             
+            let skill = SKILLS[state.currentClass][index];
             if(state.mp < skill.cost) { showToast("SEM MANA", "#44ccff"); return; }
             state.mp -= skill.cost;
 
-            let cls = CLASS_STATS[state.currentClass];
-            let dmg = 15 + (saveData.skills.atk * 5) + cls.atkBonus;
-            
-            // Skill multipliers
-            if(idx === 2) dmg = Math.floor(dmg * 1.5);
-            if(idx === 3) dmg = Math.floor(dmg * 2.5);
+            // Executa a skill
+            if(skill.isBuff) {
+                state.activeBuffs.def = 1; // Ativa defesa por 1 turno
+                showToast("DEFESA MAXIMIZADA", "#00ffff");
+            } else {
+                let cls = CLASS_STATS[state.currentClass];
+                let baseDmg = 15 + (saveData.skills.atk * 5) + cls.atkBonus;
+                let dmg = Math.floor(baseDmg * skill.dmgMult);
+                
+                // Critico
+                if(Math.random() < (0.05 + saveData.skills.crit*0.02 + cls.critBonus)) { 
+                    dmg *= 2; showToast("CRÍTICO!", "#ff0000"); screenShake(15); 
+                }
 
-            // Crit
-            if(Math.random() < (0.05 + saveData.skills.crit*0.02)) { dmg *= 2; showToast("CRÍTICO!", "#ff0000"); screenShake(15); }
+                if(skill.isDrain) {
+                    let drain = 15; state.mp = Math.min(state.maxMp, state.mp + drain);
+                    showToast(`DRENOU ${drain} MP`, "#aa00ff");
+                }
 
-            state.enemyHp -= dmg;
-            spawnParticles(width*0.75, height*0.4, '#ffaa00', 20);
-            showToast(dmg, "#ffaa00");
-            screenShake(5);
+                state.enemyHp -= dmg;
+                spawnParticles(width*0.75, height*0.4, '#ffaa00', 20);
+                showToast(dmg, "#ffaa00");
+                screenShake(5);
+            }
 
-            hideSkills(); // Volta pro menu principal
+            closeSkillMenu();
             updateHUD();
 
             if(state.enemyHp <= 0) {
                 state.enemyHp = 0;
                 handleVictory();
             } else {
-                state.turn = 'enemy';
-                setTimeout(enemyTurn, 1000);
+                endPlayerTurn();
             }
+        }
+
+        function endPlayerTurn() {
+            updateHUD();
+            state.turn = 'enemy';
+            setTimeout(enemyTurn, 1000);
         }
 
         function enemyTurn() {
             let dmg = 10 + (state.sector * 3);
             let def = saveData.skills.def;
+            
+            // Verifica Buff de Defesa
+            if(state.activeBuffs.def) {
+                dmg = Math.floor(dmg * 0.3); // Reduz 70% do dano
+                state.activeBuffs.def = 0; // Consome buff
+                showToast("BLOQUEADO!", "#00ffff");
+            }
+
             let finalDmg = Math.max(1, dmg - def);
             
-            // Dodge
-            if(Math.random() < (saveData.skills.spd * 0.02)) {
-                showToast("DESVIOU!", "#ffff00");
+            if(Math.random() < (saveData.skills.spd * 0.02)) { 
+                showToast("DESVIOU!", "#ffff00"); 
             } else {
                 state.hp -= finalDmg;
                 spawnParticles(width*0.25, height*0.7, '#ff0000', 10);
@@ -333,21 +385,17 @@
             updateHUD();
             if(state.hp <= 0) {
                 state.hp = 0;
-                showToast("FALHA", "#ff0000");
+                showToast("SISTEMA CRÍTICO", "#ff0000");
                 setTimeout(exitBattle, 2000);
             } else {
                 state.turn = 'player';
-                // Libera botões (não precisa fazer nada pois não desabilitamos visualmente, apenas lógica)
             }
         }
 
         // --- MAP & PROGRESSION ---
         function showMap() {
-            document.getElementById('game-ui').style.display='none'; 
+            closeOverlays();
             document.getElementById('map-overlay').style.display='flex';
-            document.getElementById('shop-overlay').style.display='none';
-            document.getElementById('profile-overlay').style.display='none';
-            
             const grid = document.getElementById('map-grid'); grid.innerHTML = '';
             let maxNode = (state.sector === saveData.progress.sector) ? saveData.progress.node : 11;
 
@@ -355,7 +403,7 @@
                 let div = document.createElement('div');
                 div.className = 'map-node';
                 let txt = i===10 ? "BOSS" : "HOSTILE";
-                if(i < maxNode) { div.classList.add('unlocked'); div.style.borderColor = '#00ffff'; txt = "COMPLETO"; }
+                if(i < maxNode) { div.classList.add('unlocked'); div.style.borderColor = '#00ffff'; txt = "LIMPO"; }
                 else if(i === maxNode) { div.classList.add('unlocked', 'active'); div.onclick = () => enterNode(i); }
                 else { div.style.borderColor = '#333'; }
                 
@@ -366,14 +414,12 @@
 
         function enterNode(n) {
             state.node = n;
-            state.hp = state.maxHp; // Cura ao entrar
-            state.mp = state.maxMp;
-            state.wavesTotal = n===10 ? 1 : Math.floor(Math.random()*2)+1;
-            state.waveCurrent = 1;
+            state.hp = state.maxHp; state.mp = state.maxMp; // Cura ao entrar
+            state.wavesTotal = n===10 ? 1 : Math.floor(Math.random()*2)+1; state.waveCurrent = 1;
             
             document.getElementById('map-overlay').style.display='none';
             document.getElementById('game-ui').style.display='flex';
-            hideSkills(); // Reseta para menu principal
+            closeSkillMenu(); // Garante que volta pro menu principal
             startBattle();
         }
 
@@ -420,77 +466,62 @@
             document.getElementById('shop-overlay').style.display='flex';
             updateShopUI();
         }
-        function closeShop() { 
-            document.getElementById('shop-overlay').style.display='none'; 
-            updatePlayerStats(); showMap(); 
-        }
+        function closeShop() { document.getElementById('shop-overlay').style.display='none'; updatePlayerStats(); showMap(); }
         function updateShopUI() {
             document.getElementById('shop-essence-val').innerText = saveData.essence;
             let grid = document.getElementById('shop-grid'); grid.innerHTML = '';
             ['atk','hp','mp','def','spd','crit'].forEach(k => {
-                let lvl = saveData.skills[k];
-                let cost = 10 * (lvl+1);
-                let div = document.createElement('div');
-                div.className = 'skill-card';
-                div.innerHTML = `
-                    <div style="font-weight:bold; color:white; text-transform:uppercase">${k}</div>
-                    <div style="font-size:10px; color:#aaa">Nvl ${lvl}</div>
-                    <button class="buy-btn" onclick="buySkill('${k}', ${cost})">UP (${cost})</button>
-                `;
+                let lvl = saveData.skills[k]; let cost = 10 * (lvl+1);
+                let div = document.createElement('div'); div.className = 'skill-card';
+                div.innerHTML = `<div style="font-weight:bold; color:white; text-transform:uppercase">${k}</div><div style="font-size:10px; color:#aaa">Nvl ${lvl}</div><button class="buy-btn" onclick="buySkill('${k}', ${cost})">UP (${cost})</button>`;
                 grid.appendChild(div);
             });
         }
         function buySkill(k, cost) {
-            if(saveData.essence >= cost) {
-                saveData.essence -= cost;
-                saveData.skills[k]++;
-                saveGame(); updateShopUI();
-            } else alert("Sem Essência!");
+            if(saveData.essence >= cost) { saveData.essence -= cost; saveData.skills[k]++; saveGame(); updateShopUI(); } else alert("Sem Essência!");
         }
 
         function openProfile() {
             document.getElementById('map-overlay').style.display='none';
             document.getElementById('profile-overlay').style.display='flex';
-            document.getElementById('prof-class').innerText = CLASS_STATS[state.currentClass].name;
-            let cls = CLASS_STATS[state.currentClass];
-            document.getElementById('prof-atk').innerText = 15 + (saveData.skills.atk * 5) + cls.atkBonus;
-            document.getElementById('prof-hp').innerText = state.maxHp;
-            document.getElementById('prof-mp').innerText = state.maxMp;
-            document.getElementById('prof-def').innerText = saveData.skills.def + cls.defBonus;
-            document.getElementById('prof-spd').innerText = saveData.skills.spd;
-            document.getElementById('prof-crit').innerText = (0.05 + saveData.skills.crit*0.02 + (cls.critBonus||0)).toFixed(2);
+            let list = document.getElementById('prof-stats-list');
+            const cls = CLASS_STATS[state.currentClass];
+            let atk = 15 + (saveData.skills.atk*5) + cls.atkBonus;
+            
+            list.innerHTML = `
+                <div class="stat-item"><span>CLASSE</span><span style="color:${cls.color}">${cls.name}</span></div>
+                <div class="stat-item"><span>HP MÁX</span><span>${state.maxHp}</span></div>
+                <div class="stat-item"><span>MP MÁX</span><span>${state.maxMp}</span></div>
+                <div class="stat-item"><span>ATK</span><span>${atk}</span></div>
+                <div class="stat-item"><span>DEF</span><span>${saveData.skills.def}</span></div>
+            `;
         }
         function closeProfile() {
             document.getElementById('profile-overlay').style.display='none';
             showMap();
         }
+        function closeOverlays() { document.querySelectorAll('.overlay').forEach(el => { if(el.id !== 'start-overlay') el.style.display='none'; }); }
 
         // --- UTILS & DRAW ---
         function updateHUD() {
             document.getElementById('hp-bar').style.width = (state.hp/state.maxHp*100)+'%';
             document.getElementById('mp-bar').style.width = (state.mp/state.maxMp*100)+'%';
-            document.getElementById('sector-display').innerText = `${state.sector}-${state.node}`;
+            document.getElementById('sector-val').innerText = `${state.sector}-${state.node}`;
             document.getElementById('essence-val').innerText = saveData.essence;
-            // Check mana for visual feedback
             let healBtn = document.getElementById('btn-heal');
-            if(state.mp < 15) healBtn.style.opacity = "0.5"; else healBtn.style.opacity = "1";
+            if(state.mp < 20) healBtn.style.opacity = "0.5"; else healBtn.style.opacity = "1";
         }
 
         function showToast(msg, color) {
-            let t = document.getElementById('toast-msg');
-            t.innerText = msg; t.style.color = color; t.style.opacity = 1; t.style.top = "40%";
+            let t = document.getElementById('toast-msg'); t.innerText = msg; t.style.color = color; t.style.opacity = 1; t.style.top = "40%";
             setTimeout(()=> { t.style.opacity = 0; t.style.top = "30%"; }, 800);
         }
 
         function screenShake(amount) { state.shake = amount; }
-        function spawnParticles(x, y, color, count) {
-            for(let i=0; i<count; i++) state.particles.push({x:x, y:y, vx:(Math.random()-0.5)*10, vy:(Math.random()-0.5)*10, life:1.0, color:color, size:Math.random()*3});
-        }
+        function spawnParticles(x, y, color, count) { for(let i=0; i<count; i++) state.particles.push({x:x, y:y, vx:(Math.random()-0.5)*10, vy:(Math.random()-0.5)*10, life:1.0, color:color, size:Math.random()*3}); }
 
         function drawGame() {
             ctx.fillStyle = "#050505"; ctx.fillRect(0,0,width,height);
-            
-            // Grid Background
             ctx.strokeStyle = state.sector===1?"#003300":(state.sector===2?"#331100":"#220033");
             ctx.lineWidth = 2; ctx.beginPath();
             let horizon = height * 0.4;
@@ -503,16 +534,11 @@
 
             if(document.getElementById('game-ui').style.display === 'flex') {
                 let clsColor = CLASS_STATS[state.currentClass].color;
-                // Player
                 if(assets.player.complete && assets.player.naturalWidth > 0) {
                     ctx.shadowColor = clsColor; ctx.shadowBlur = 20;
                     ctx.drawImage(assets.player, width*0.2-50, height*0.6-50, 100, 100);
-                } else {
-                    ctx.fillStyle = clsColor; ctx.beginPath(); ctx.arc(width*0.2, height*0.6, 30, 0, Math.PI*2); ctx.fill();
-                }
-                ctx.shadowBlur = 0;
-
-                // Enemy
+                } else { ctx.fillStyle = clsColor; ctx.beginPath(); ctx.arc(width*0.2, height*0.6, 30, 0, Math.PI*2); ctx.fill(); }
+                
                 if(state.enemyHp > 0) {
                     let ex = width*0.8, ey = height*0.4;
                     let bossColor = state.node===10 ? '#b026ff' : '#ff4444';
@@ -520,17 +546,12 @@
                         ctx.shadowColor = bossColor; ctx.shadowBlur = 20;
                         let s = state.node===10 ? 150 : 100;
                         ctx.drawImage(assets.enemy, ex-s/2, ey-s/2, s, s);
-                    } else {
-                        ctx.fillStyle = bossColor; ctx.fillRect(ex-30, ey-30, 60, 60);
-                    }
-                    // Enemy HP Bar
-                    ctx.shadowBlur = 0;
+                    } else { ctx.fillStyle = bossColor; ctx.fillRect(ex-30, ey-30, 60, 60); }
                     ctx.fillStyle = "#333"; ctx.fillRect(ex-40, ey-60, 80, 6);
                     ctx.fillStyle = bossColor; ctx.fillRect(ex-40, ey-60, 80*(state.enemyHp/state.enemyMaxHp), 6);
                 }
             }
 
-            // Particles
             state.particles.forEach((p,i) => {
                 ctx.globalAlpha = p.life; ctx.fillStyle = p.color;
                 ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
@@ -539,7 +560,6 @@
             });
             ctx.globalAlpha = 1.0;
             ctx.restore();
-
             requestAnimationFrame(drawGame);
         }
     </script>
