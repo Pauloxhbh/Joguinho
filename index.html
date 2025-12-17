@@ -2,93 +2,109 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon RPG: V28 Stable</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Neon RPG: V29 Stable</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background-color: #050505; overflow: hidden; font-family: 'Rajdhani', sans-serif; height: 100vh; width: 100vw; color: white; }
+        body { background-color: #000; overflow: hidden; font-family: 'Rajdhani', sans-serif; position: fixed; width: 100%; height: 100%; color: white; touch-action: none; }
         canvas { display: block; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; z-index: 10; }
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; z-index: 10; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
         
         /* HUD */
-        .hud-top { width: 100%; max-width: 500px; margin: 0 auto; pointer-events: auto; display: flex; justify-content: space-between; align-items: flex-start; text-shadow: 0 2px 5px rgba(0,0,0,0.8); position: relative; }
-        .bars-area { width: 60%; }
-        .stats-area { width: 35%; text-align: right; font-family: 'Orbitron'; }
-        .exit-btn { position: absolute; top: -10px; right: -10px; background: rgba(255, 0, 0, 0.3); border: 1px solid #ff4444; color: #ff4444; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); }
-        .sector-indicator { font-size: 18px; color: #fff; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; }
-        .node-indicator { font-size: 12px; color: #aaa; margin-bottom: 5px; }
-        .essence-box { color: #b026ff; font-weight: bold; font-size: 16px; text-shadow: 0 0 15px #b026ff; }
-        .bar-container { width: 100%; height: 14px; background: rgba(20, 20, 20, 0.8); border: 1px solid #444; border-radius: 4px; margin-bottom: 8px; overflow: hidden; box-shadow: 0 0 5px rgba(0,0,0,0.5); position: relative;}
-        .bar-fill { height: 100%; width: 100%; transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
-        .hp { background: linear-gradient(90deg, #ff4444, #ff0055); box-shadow: 0 0 10px #ff0055; }
-        .mp { background: linear-gradient(90deg, #44ccff, #0088ff); box-shadow: 0 0 10px #0088ff; }
+        .hud-top { width: 100%; max-width: 500px; margin: 0 auto; pointer-events: auto; display: flex; justify-content: space-between; align-items: flex-start; text-shadow: 0 2px 5px rgba(0,0,0,0.8); position: relative; margin-top: 10px; }
+        .bars-area { width: 55%; }
+        .stats-area { width: 40%; text-align: right; font-family: 'Orbitron'; }
         
-        /* LOG */
-        .battle-log-container { position: absolute; bottom: 110px; left: 0; width: 100%; max-height: 120px; overflow-y: hidden; display: flex; flex-direction: column-reverse; padding: 10px 20px; pointer-events: none; mask-image: linear-gradient(to top, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to top, black 80%, transparent 100%); }
-        .log-entry { font-family: 'Share Tech Mono', monospace; font-size: 12px; margin-bottom: 4px; text-shadow: 0 1px 2px #000; }
-        .log-player { color: #00ffff; } .log-enemy { color: #ff4444; } .log-system { color: #ffff00; font-weight: bold; }
+        .exit-btn { position: absolute; top: -5px; right: -5px; background: rgba(255, 0, 0, 0.2); border: 1px solid #ff4444; color: #ff4444; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); font-size: 12px; }
+        
+        .sector-indicator { font-size: 16px; color: #fff; font-weight: 900; letter-spacing: 1px; margin-bottom: 2px; }
+        .node-indicator { font-size: 10px; color: #aaa; margin-bottom: 5px; }
+        .essence-box { color: #b026ff; font-weight: bold; font-size: 14px; text-shadow: 0 0 15px #b026ff; }
 
-        /* SKILL BUTTONS */
-        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; pointer-events: auto; margin-bottom: 15px; width: 100%; max-width: 500px; align-self: center; }
-        .btn { background: rgba(10, 10, 15, 0.9); border: 1px solid #444; color: #fff; padding: 12px 0; border-radius: 6px; font-weight: bold; font-size: 11px; font-family: 'Orbitron'; cursor: pointer; backdrop-filter: blur(10px); transition: 0.1s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .bar-container { width: 100%; height: 10px; background: rgba(30, 30, 30, 0.8); border: 1px solid #555; border-radius: 4px; margin-bottom: 6px; overflow: hidden; position: relative; }
+        .bar-fill { height: 100%; width: 100%; transition: width 0.3s ease-out; }
+        .hp { background: linear-gradient(90deg, #ff4444, #ff0055); box-shadow: 0 0 8px #ff0055; }
+        .mp { background: linear-gradient(90deg, #44ccff, #0088ff); box-shadow: 0 0 8px #0088ff; }
+        
+        /* CONTROLS - REPRODUZINDO O ESTILO DA FOTO */
+        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; pointer-events: auto; margin-bottom: 20px; width: 100%; max-width: 500px; align-self: center; }
+        .btn { background: rgba(10, 15, 20, 0.9); border: 1px solid #444; color: #fff; padding: 15px 0; border-radius: 8px; font-weight: bold; font-size: 12px; font-family: 'Orbitron'; cursor: pointer; backdrop-filter: blur(10px); transition: 0.1s; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .btn:active { transform: scale(0.96); border-color: #fff; }
-        .btn span { font-size: 9px; color: #aaa; margin-top: 2px; }
-        #btn-s1 { border-color: #ff4444; color: #ffcccc; } #btn-s2 { border-color: #44ccff; color: #ccffff; } #btn-s3 { border-color: #b026ff; color: #e0b0ff; } #btn-rest { border-color: #ffff00; color: #ffffcc; }
+        .btn span { font-size: 9px; color: #888; margin-top: 3px; font-family: 'Share Tech Mono'; }
+        
+        #btn-s1 { border-bottom: 3px solid #ff4444; } 
+        #btn-s2 { border-bottom: 3px solid #44ccff; } 
+        #btn-s3 { border-bottom: 3px solid #b026ff; } 
+        #btn-rest { border-bottom: 3px solid #ffff00; }
         .btn:disabled { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; border-color: #333; }
 
-        /* OVERLAYS COMUM */
-        #map-overlay, #shop-overlay, #inventory-overlay, #profile-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(10, 10, 15, 0.98); z-index: 80; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; pointer-events: auto; }
+        /* START SCREEN (BASEADO NA FOTO) */
+        #start-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; z-index: 150; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; pointer-events: auto; }
         
-        /* MAP HEADER */
-        .map-header { text-align: center; margin: 20px 0; width: 100%; max-width: 400px; }
-        .map-title h1 { font-family: 'Orbitron'; color: #00ffff; font-size: 20px; letter-spacing: 2px; }
-        .header-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; margin-top: 15px; }
-        .menu-btn { padding: 10px; border-radius: 6px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; font-size: 11px; border: 1px solid #555; background: rgba(255,255,255,0.05); color: white; transition: 0.2s; }
-        .btn-shop { border-color: #b026ff; color: #e0b0ff; } .btn-equip { border-color: #00ff00; color: #ccffcc; } .btn-profile { border-color: #00ffff; color: #ccffff; }
+        .game-logo { font-family: 'Orbitron'; font-size: 28px; color: #fff; text-shadow: 0 0 20px #00ffff; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 2px; }
         
-        .map-grid { display: flex; flex-direction: column-reverse; gap: 15px; width: 100%; max-width: 350px; padding-bottom: 50px; position: relative; margin-top: 20px; }
-        .map-grid::before { content: ''; position: absolute; top: 20px; bottom: 20px; left: 50%; width: 2px; background: #333; transform: translateX(-50%); z-index: 0; }
-        .map-node { background: #111; border: 2px solid #444; width: 100%; padding: 12px; border-radius: 8px; position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s; opacity: 0.5; filter: grayscale(1); pointer-events: none; }
-        .map-node.unlocked { opacity: 1; filter: grayscale(0); border-color: #00ff00; background: rgba(0, 255, 0, 0.05); cursor: pointer; pointer-events: auto; }
-        .map-node.active { box-shadow: 0 0 15px rgba(0, 255, 0, 0.4); border-color: #fff; animation: pulseNode 2s infinite; }
-        .map-node.completed { border-color: #00ffff; color: #00ffff; }
-        .map-node.boss { border-color: #ff0055; }
-        .node-info { display: flex; flex-direction: column; text-align: left; }
-        .node-title { font-family: 'Orbitron'; font-weight: bold; font-size: 14px; }
-        .node-desc { font-family: 'Share Tech Mono'; font-size: 11px; color: #aaa; text-transform: uppercase; }
-        @keyframes pulseNode { 0%{transform:scale(1);} 50%{transform:scale(1.02);} 100%{transform:scale(1);} }
-
-        /* SHOP STYLES */
-        .shop-header h1 { font-family: 'Orbitron'; color: #ff4444; font-size: 24px; margin-bottom: 10px; margin-top: 20px; }
-        .shop-essence { font-size: 32px; color: #b026ff; font-weight: bold; font-family: 'Orbitron'; margin-bottom: 20px; }
-        .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 420px; margin-bottom: 20px; }
-        .skill-card { background: rgba(255, 255, 255, 0.03); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-        .sc-atk { border-color: #00f0ff; } .sc-hp { border-color: #bd00ff; } .sc-mp { border-color: #a020f0; } .sc-crt { border-color: #00ff00; } .sc-def { border-color: #0088ff; } .sc-spd { border-color: #ffff00; }
-        .skill-icon { font-size: 30px; margin-bottom: 5px; }
-        .buy-btn { width: 100%; padding: 8px; border-radius: 4px; background: #222; border: 1px solid #444; color: #666; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; }
-        .buy-btn.can-buy { border-color: #fff; background: rgba(255,255,255,0.15); color: #fff; }
-        #restart-btn { width: 100%; max-width: 420px; padding: 15px; background: #333; border: 1px solid #fff; color: white; font-family: 'Orbitron'; cursor: pointer; margin-bottom: 20px; }
-
-        /* START */
-        #start-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #050505; z-index: 150; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; pointer-events: auto; }
-        .class-container { display: grid; gap: 15px; width: 100%; max-width: 400px; }
-        .class-btn { padding: 20px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: white; border-radius: 8px; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+        .class-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 380px; }
+        .class-btn { 
+            background: rgba(20, 20, 25, 1); 
+            border: 1px solid #333; 
+            border-radius: 12px; 
+            padding: 20px; 
+            display: flex; align-items: center; justify-content: space-between; 
+            cursor: pointer; transition: 0.2s;
+            position: relative; overflow: hidden;
+        }
+        .class-btn:active { transform: scale(0.98); background: rgba(40,40,50,1); }
         
-        #relic-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; }
-        .relic-card { background: #222; border: 1px solid #444; padding: 20px; margin-bottom: 10px; width: 100%; max-width: 300px; cursor: pointer; display: flex; align-items: center; }
-        .relic-icon { font-size: 30px; margin-right: 15px; }
+        .c-icon { font-size: 24px; color: #fff; }
+        .c-info { display: flex; flex-direction: column; text-align: left; }
+        .c-title { font-family: 'Orbitron'; font-weight: bold; font-size: 14px; margin-bottom: 4px; text-transform: uppercase; }
+        .c-desc { font-family: 'Share Tech Mono'; font-size: 11px; color: #888; }
 
-        #dialogue-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: flex-end; padding: 20px; z-index: 60; pointer-events: auto; }
-        .dialogue-box { background: rgba(10, 15, 25, 0.95); border: 1px solid #00ffff; border-top: 3px solid #00ffff; padding: 25px; border-radius: 12px; margin-bottom: 10%; box-shadow: 0 0 20px rgba(0,255,255,0.1); }
-        .char-name { color: #00ffff; font-size: 14px; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px; font-family: 'Orbitron'; text-transform: uppercase; }
-        .dialogue-text { font-family: 'Share Tech Mono', monospace; font-size: 15px; line-height: 1.5; color: #e0e0e0; min-height: 60px; white-space: pre-wrap; }
-        .next-btn { background: transparent; color: #00ffff; border: 2px solid #00ffff; padding: 15px; width: 100%; margin-top: 15px; font-weight: bold; font-family: 'Orbitron'; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
+        /* Cores Específicas da Classe */
+        .samurai-btn .c-title { color: #ff0055; }
+        .samurai-btn { border-left: 4px solid #ff0055; }
+        
+        .mage-btn .c-title { color: #00ffff; }
+        .mage-btn { border-left: 4px solid #00ffff; }
+        
+        .tank-btn .c-title { color: #00ff00; }
+        .tank-btn { border-left: 4px solid #00ff00; }
 
+        /* MAPA */
+        #map-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #080808; z-index: 80; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; }
+        .map-header { text-align: center; margin: 30px 0; width: 100%; }
+        .map-title h1 { font-family: 'Orbitron'; color: #00ffff; font-size: 22px; margin-bottom: 5px; }
+        .header-buttons { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
+        .menu-btn { padding: 10px 20px; border-radius: 20px; font-family: 'Orbitron'; font-size: 11px; font-weight: bold; background: #222; border: 1px solid #444; color: #fff; cursor: pointer; }
+        .btn-shop { color: #b026ff; border-color: #b026ff; } .btn-equip { color: #00ff00; border-color: #00ff00; } .btn-profile { color: #00ffff; border-color: #00ffff; }
+        
+        .map-grid { display: flex; flex-direction: column-reverse; gap: 20px; width: 100%; max-width: 320px; padding-bottom: 50px; position: relative; margin-top: 20px; }
+        .map-grid::before { content: ''; position: absolute; top: 20px; bottom: 20px; left: 50%; width: 2px; background: #222; transform: translateX(-50%); z-index: 0; }
+        .map-node { background: #111; border: 1px solid #333; width: 100%; padding: 15px; border-radius: 8px; position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; opacity: 0.4; }
+        .map-node.unlocked { opacity: 1; border-color: #00ff00; cursor: pointer; }
+        .map-node.active { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.2); transform: scale(1.05); }
+        .node-title { font-family: 'Orbitron'; font-size: 14px; font-weight: bold; }
+        .node-desc { font-size: 10px; color: #666; font-family: 'Share Tech Mono'; text-transform: uppercase; }
+
+        /* SHOP */
+        #shop-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: #050505; z-index: 100; display: none; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; }
+        .shop-header h1 { font-family: 'Orbitron'; color: #ff4444; font-size: 26px; margin-top: 30px; text-transform: uppercase; letter-spacing: 2px; }
+        .shop-essence { font-size: 32px; color: #b026ff; font-family: 'Orbitron'; font-weight: bold; margin-bottom: 20px; }
+        .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 400px; margin-bottom: 30px; }
+        .skill-card { background: rgba(30,30,35,1); border: 1px solid #333; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .buy-btn { width: 100%; padding: 10px; margin-top: 10px; background: #222; border: none; border-radius: 6px; color: #666; font-family: 'Orbitron'; font-size: 11px; font-weight: bold; }
+        .buy-btn.can-buy { background: #b026ff; color: #fff; box-shadow: 0 0 10px #b026ff; }
+        #restart-btn { width: 100%; max-width: 300px; padding: 15px; background: #ff4444; border: none; border-radius: 8px; font-family: 'Orbitron'; font-weight: bold; color: #000; margin-bottom: 30px; }
+
+        /* LOG */
+        .battle-log-container { position: absolute; bottom: 120px; left: 0; width: 100%; max-height: 100px; overflow: hidden; display: flex; flex-direction: column-reverse; padding: 10px 20px; pointer-events: none; mask-image: linear-gradient(to top, black 50%, transparent 100%); -webkit-mask-image: linear-gradient(to top, black 50%, transparent 100%); }
+        .log-entry { font-family: 'Share Tech Mono', monospace; font-size: 11px; margin-bottom: 3px; text-shadow: 0 1px 1px #000; }
+        
         .toast { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold; color: #fff; text-shadow: 0 0 10px #fff; opacity: 0; transition: opacity 0.5s; z-index: 80; pointer-events: none; }
         .toast.show { opacity: 1; transform: translate(-50%, -80%); }
     </style>
@@ -96,22 +112,30 @@
 <body>
     <canvas id="gameCanvas"></canvas>
 
-    <div id="start-overlay" style="display:flex;">
-        <h1 style="text-shadow: 0 0 20px cyan; margin-bottom: 15px; font-size: 32px; font-family:'Orbitron'; color:white">NEON PROTOCOL</h1>
+    <div id="start-overlay">
+        <div class="game-logo">NEON PROTOCOL</div>
         <div class="class-container">
-            <button class="class-btn" onclick="chooseClass('samurai')"><div><div style="font-weight:bold; color:#ff0055">LÂMINA VERMELHA</div><small>Leitura e Ritmo</small></div><div style="font-size:24px">⚔️</div></button>
-            <button class="class-btn" onclick="chooseClass('mage')"><div><div style="font-weight:bold; color:#00ffff">CÓDIGO AZUL</div><small>Controle de Recursos</small></div><div style="font-size:24px">✨</div></button>
-            <button class="class-btn" onclick="chooseClass('tank')"><div><div style="font-weight:bold; color:#00ff00">FIREWALL VERDE</div><small>Sobrevivência</small></div><div style="font-size:24px">🛡️</div></button>
+            <div class="class-btn samurai-btn" onclick="chooseClass('samurai')">
+                <div class="c-info"><div class="c-title">LÂMINA VERMELHA</div><div class="c-desc">Leitura e Ritmo</div></div>
+                <div class="c-icon">⚔️</div>
+            </div>
+            <div class="class-btn mage-btn" onclick="chooseClass('mage')">
+                <div class="c-info"><div class="c-title">CÓDIGO AZUL</div><div class="c-desc">Controle de Recursos</div></div>
+                <div class="c-icon">✨</div>
+            </div>
+            <div class="class-btn tank-btn" onclick="chooseClass('tank')">
+                <div class="c-info"><div class="c-title">FIREWALL VERDE</div><div class="c-desc">Sobrevivência</div></div>
+                <div class="c-icon">🛡️</div>
+            </div>
         </div>
+        <p style="color:#444; font-size:10px; margin-top:30px; font-family:'Share Tech Mono'">V29 STABLE BUILD</p>
     </div>
 
     <div id="map-overlay">
         <div class="map-header">
             <div class="map-title"><h1>MAPA DE REDE</h1><p id="map-sector-name">SETOR 1</p></div>
             <div class="header-buttons">
-                <button class="menu-btn btn-profile" onclick="/*...*/">PERFIL 👤</button>
-                <button class="menu-btn btn-equip" onclick="alert('Inventário vazio')">ITEMS 🎒</button>
-                <button class="menu-btn btn-shop" onclick="openShopFromMap()">LOJA 🛒</button>
+                <button class="menu-btn btn-shop" onclick="openShopFromMap()">LOJA</button>
             </div>
         </div>
         <div class="map-grid" id="map-grid"></div>
@@ -125,12 +149,13 @@
             </div>
             <div class="stats-area">
                 <div class="sector-indicator" id="sector-display">1-1</div>
-                <div class="currency-box"><div class="curr-essence">🟣 <span id="essence-val">0</span></div></div>
+                <div class="node-indicator" id="wave-display">ONDAS: 1/1</div>
+                <div class="essence-box">🟣 <span id="essence-val">0</span></div>
             </div>
-            <button class="exit-btn" onclick="exitBattle()">X</button>
+            <button class="exit-btn" onclick="exitBattle()">✕</button>
         </div>
         
-        <div class="battle-log-container" id="battle-log"><div class="log-entry log-system">Batalha iniciada...</div></div>
+        <div class="battle-log-container" id="battle-log"></div>
         <div id="toast-msg" class="toast hidden"></div>
         
         <div class="controls" id="controls-area">
@@ -142,7 +167,7 @@
     </div>
 
     <div id="shop-overlay">
-        <div class="shop-header"><h1>MERCADO NEGRO</h1><div class="shop-essence">🟣 <span id="shop-essence-val">0</span></div></div>
+        <div class="shop-header"><h1>SINAL PERDIDO</h1><div class="shop-essence">🟣 <span id="shop-essence-val">0</span></div></div>
         <div class="skill-grid">
             <div class="skill-card sc-atk"><div class="skill-icon" style="color:#00f0ff">⚔️</div><div class="skill-lvl">v.<span id="lvl-atk">0</span></div><button class="buy-btn" id="buy-atk" onclick="buyUpgrade('atk')">UP</button></div>
             <div class="skill-card sc-hp"><div class="skill-icon" style="color:#bd00ff">❤️</div><div class="skill-lvl">v.<span id="lvl-hp">0</span></div><button class="buy-btn" id="buy-hp" onclick="buyUpgrade('hp')">UP</button></div>
@@ -154,66 +179,57 @@
         <button id="restart-btn" onclick="closeShop()">VOLTAR AO MAPA</button>
     </div>
 
-    <div id="relic-overlay"><div class="relic-title">ARTEFATO RECUPERADO</div><div class="relic-container" id="relic-list"></div></div>
-    <div id="dialogue-overlay"><div class="dialogue-box"><div class="char-name" id="char-name-disp">LOG</div><div class="dialogue-text" id="story-text"></div><button class="next-btn" id="dialogue-btn" onclick="handleDialogueClick()">>></button></div></div>
-
     <script>
-        // --- CONSTANTS ---
-        const SECTOR_NAMES = { 1: "SETOR 1: GRID", 2: "SETOR 2: FIREWALL", 3: "SETOR 3: NÚCLEO" };
-        const NODE_NAMES = { 1: ["Cache", "Proxy", "Buffer", "Daemon", "Rootkit", "Malware", "Spyware", "Adware", "Trojan", "AGREGADOR"], 2: ["Sentinel", "Guardian", "Worm", "Backdoor", "Exploit", "Phishing", "Ransom", "Keylog", "Botnet", "VIGIA"], 3: ["Null", "Void", "NaN", "FatalErr", "BSOD", "Overflow", "Leak", "Deadlock", "Segfault", "VÍRUS MESTRE"] };
-        const SECTOR_LORE = { 1: "SETOR 1: THE GRID\n\nSetor periférico. Fragmentos de dados hostis detectados. Inimigos são fracos mas numerosos.", 2: "SETOR 2: FIREWALL\n\nCamada de segurança corrompida. Cuidado com o calor (Overheat).", 3: "SETOR 3: NÚCLEO (VOID)\n\nO vazio do sistema. Onde o vírus reside." };
-        const SKILLS = { samurai: [ { id: 1, name: "CORTE", cost: 0 }, { id: 2, name: "POSTURA", cost: 0 }, { id: 3, name: "GOLPE", cost: 20 } ], mage: [ { id: 1, name: "RAIO", cost: 10 }, { id: 2, name: "ESCUDO", cost: 15 }, { id: 3, name: "EXPLOSÃO", cost: 40 } ], tank: [ { id: 1, name: "BASH", cost: 0 }, { id: 2, name: "FORTIFICAR", cost: 10 }, { id: 3, name: "COUNTER", cost: 15 } ] };
-        const CLASS_STATS = { samurai: { name: "Lâmina", color: "#ff0055", hpMult: 0.9, mpMult: 0.8, atkBonus: 8, critBonus: 0.20, defBonus: 0 }, mage: { name: "Código", color: "#00ffff", hpMult: 0.7, mpMult: 1.6, atkBonus: 2, magicMult: 1.4, defBonus: 0 }, tank: { name: "Firewall", color: "#00ff00", hpMult: 1.5, mpMult: 0.6, atkBonus: -2, defBonus: 4 } };
-        const RELIC_DEX = [ { id: 'vamp', name: 'Dreno', icon: '🩸', desc: 'Cura 10% do dano.' }, { id: 'thorns', name: 'Espinhos', icon: '🌵', desc: 'Reflete 20% do dano.' }, { id: 'double', name: 'Loop', icon: '➰', desc: '25% Magia Dupla.' }, { id: 'crit', name: 'Overclock', icon: '⚡', desc: 'Crítico 3x.' }, { id: 'exec', name: 'Delete', icon: '💀', desc: 'Mata se HP < 20%.' }, { id: 'rich', name: 'Miner', icon: '💎', desc: '+50% Essência.' } ];
+        // --- CONFIG & CONSTANTS ---
+        const SECTOR_NAMES = { 1: "SETOR 1: GRID", 2: "SETOR 2: FIREWALL", 3: "SETOR 3: VOID" };
+        const SKILLS = {
+            samurai: [{ id: 1, name: "CORTE", cost: 0 }, { id: 2, name: "POSTURA", cost: 0 }, { id: 3, name: "GOLPE", cost: 20 }],
+            mage: [{ id: 1, name: "RAIO", cost: 10 }, { id: 2, name: "ESCUDO", cost: 15 }, { id: 3, name: "EXPLOSÃO", cost: 40 }],
+            tank: [{ id: 1, name: "BASH", cost: 0 }, { id: 2, name: "FORTIFICAR", cost: 10 }, { id: 3, name: "COUNTER", cost: 15 }]
+        };
+        const CLASS_STATS = { 
+            samurai: { name: "Lâmina", color: "#ff0055", hpMult: 0.9, mpMult: 0.8, atkBonus: 8, critBonus: 0.20, defBonus: 0 }, 
+            mage: { name: "Código", color: "#00ffff", hpMult: 0.7, mpMult: 1.6, atkBonus: 2, magicMult: 1.4, defBonus: 0 }, 
+            tank: { name: "Firewall", color: "#00ff00", hpMult: 1.5, mpMult: 0.6, atkBonus: -2, defBonus: 4 } 
+        };
         
+        // --- SAVE SYSTEM ---
         const DEFAULT_SAVE = { essence: 0, skills: { atk: 0, hp: 0, mp: 0, crit: 0, def: 0, spd: 0 }, progress: { sector: 1, node: 1 } };
         let saveData;
-        try {
-            saveData = JSON.parse(localStorage.getItem('neonRpgV28')) || DEFAULT_SAVE;
-            // Robustez: garante que campos existam
-            if(saveData.skills.def === undefined) saveData.skills.def = 0;
-            if(saveData.skills.spd === undefined) saveData.skills.spd = 0;
-            if(!saveData.progress) saveData.progress = { sector: 1, node: 1 };
-        } catch(e) {
-            console.log("Save corrompido, resetando...");
-            saveData = DEFAULT_SAVE;
-        }
-        function saveGame() { localStorage.setItem('neonRpgV28', JSON.stringify(saveData)); }
+        try { saveData = JSON.parse(localStorage.getItem('neonRpgV29')) || DEFAULT_SAVE; } catch(e) { saveData = DEFAULT_SAVE; }
+        if(!saveData.skills.def) saveData.skills.def=0; if(!saveData.skills.spd) saveData.skills.spd=0; if(!saveData.progress) saveData.progress={sector:1,node:1};
+        function saveGame() { localStorage.setItem('neonRpgV29', JSON.stringify(saveData)); }
 
+        // --- ASSETS (FAILSAFE) ---
+        // Se a imagem não carregar, usamos formas geométricas
         let assets = { player: new Image(), enemy: new Image() };
-        let state = { turn: 'player', sector: 1, node: 1, wavesTotal: 1, waveCurrent: 1, hp: 0, maxHp: 0, mp: 0, maxMp: 0, enemyHp: 0, enemyMaxHp: 0, isBoss: false, particles: [], shake: 0, runEssence: 0, currentClass: 'samurai', bgProps: [], relics: [], logs: [], activeBuffs: {}, cooldowns: {}, lastSkill: null };
         
+        // --- CORE STATE ---
+        let state = { turn: 'player', sector: 1, node: 1, wavesTotal: 1, waveCurrent: 1, hp: 0, maxHp: 0, mp: 0, maxMp: 0, enemyHp: 0, enemyMaxHp: 0, isBoss: false, particles: [], shake: 0, runEssence: 0, currentClass: 'samurai', activeBuffs: {}, lastSkill: null };
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
         let width, height, gameLoopId;
 
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
 
-        // --- ASSET LOADER (NON-BLOCKING) ---
-        function setAssetSrc(imgObj, url) {
-            imgObj.loaded = false;
-            imgObj.src = url;
-            imgObj.onload = () => { imgObj.loaded = true; };
-            imgObj.onerror = () => { imgObj.loaded = false; console.log("Erro img:", url); };
-        }
-
-        // --- GAME START ---
+        // --- INIT GAME ---
         function chooseClass(className) {
-            document.getElementById('start-overlay').style.display='none';
+            document.getElementById('start-overlay').style.display = 'none';
             state.currentClass = className;
-            // Carrega imagem em paralelo, não espera
-            setAssetSrc(assets.player, `https://robohash.org/Neon${className}?set=set1`);
+            
+            // Tenta carregar imagem, mas não bloqueia o jogo
+            assets.player.src = `https://robohash.org/Neon${className}?set=set1`;
+            
             initStats(); 
-            initBackground(); 
+            // Inicia loop imediatamente
             if(gameLoopId) cancelAnimationFrame(gameLoopId);
             drawGame(Date.now());
         }
 
         function initStats() {
             updatePlayerStats();
-            state.sector = saveData.progress.sector; state.relics = []; state.turn = 'player';
-            updateSkillButtons(); updateHUD(); 
-            if(state.sector === 1 && saveData.progress.node === 1) startDialogue("SISTEMA", SECTOR_LORE[1], showMap); else showMap();
+            state.sector = saveData.progress.sector; state.turn = 'player';
+            updateSkillButtons(); updateHUD(); showMap();
         }
 
         function updatePlayerStats() {
@@ -230,8 +246,6 @@
             }
         }
 
-        function initBackground() { state.bgProps = []; for(let i=0; i<50; i++) state.bgProps.push({ x: Math.random()*width, y: Math.random()*height, speed: Math.random()*2+1, val: Math.random() }); }
-
         // --- MAP ---
         function showMap() {
             document.getElementById('game-ui').style.display='none'; document.getElementById('map-overlay').style.display='flex';
@@ -239,50 +253,39 @@
             const grid = document.getElementById('map-grid'); grid.innerHTML = '';
             document.getElementById('map-sector-name').innerText = SECTOR_NAMES[state.sector];
             let maxNode = (state.sector === saveData.progress.sector) ? saveData.progress.node : (state.sector < saveData.progress.sector ? 11 : 1);
-            let names = NODE_NAMES[state.sector] || NODE_NAMES[1];
+
             for(let i=1; i<=10; i++) {
                 const div = document.createElement('div'); div.className = 'map-node'; let icon = '🔹';
                 if(i===10) { div.classList.add('boss'); icon='💀'; } else if(i%3===0) icon='⚠️';
-                if(i < maxNode) { div.classList.add('completed'); icon='✅'; }
-                else if(i === maxNode) { div.classList.add('active','unlocked'); div.onclick = () => enterNode(i); }
-                else { div.classList.add('locked'); icon='🔒'; }
-                div.innerHTML = `<div class="node-info"><div class="node-title">${state.sector}-${i}</div><div class="node-desc">${names[i-1]}</div></div><div class="node-icon">${icon}</div>`;
+                if(i < maxNode) { div.classList.add('unlocked'); div.style.opacity='0.5'; icon='✅'; }
+                else if(i === maxNode) { div.classList.add('unlocked', 'active'); div.onclick = () => enterNode(i); }
+                else { div.style.opacity='0.2'; icon='🔒'; }
+                div.innerHTML = `<div class="node-title">${state.sector}-${i}</div><div class="node-desc">${i===10?'BOSS':'HOSTILE'}</div><div style="font-size:16px">${icon}</div>`;
                 grid.appendChild(div);
             }
         }
 
         function enterNode(nodeIndex) {
-            state.hp = state.maxHp; state.mp = state.maxMp; // Restore on node enter
+            state.hp = state.maxHp; state.mp = state.maxMp;
             state.node = nodeIndex; state.wavesTotal = (nodeIndex === 10) ? 1 : Math.floor(Math.random() * 2) + 1; state.waveCurrent = 1;
-            state.activeBuffs = {}; state.cooldowns = {}; state.lastSkill = null;
             document.getElementById('map-overlay').style.display = 'none'; document.getElementById('game-ui').style.display = 'flex';
-            addLog("--- INICIANDO FASE ---", "system");
             startBattle();
         }
 
         function exitBattle() { document.getElementById('game-ui').style.display='none'; showMap(); }
 
+        // --- BATTLE ---
         function startBattle() {
             state.isBoss = (state.node === 10 && state.waveCurrent === 1);
             let diffMult = state.sector + (state.node * 0.1);
             state.enemyMaxHp = Math.floor(100 * diffMult * 1.5); if(state.isBoss) state.enemyMaxHp *= 2.5; state.enemyHp = state.enemyMaxHp;
-            let spriteId = state.isBoss ? `BOSS_SEC${state.sector}` : `MOB_S${state.sector}_N${state.node}`;
-            setAssetSrc(assets.enemy, `https://robohash.org/${spriteId}?set=set2`);
+            
+            // Load enemy image (non-blocking)
+            let spriteId = state.isBoss ? `BOSS_SEC${state.sector}` : `MOB_S${state.sector}_N${state.node}_W${state.waveCurrent}`;
+            assets.enemy.src = `https://robohash.org/${spriteId}?set=set2`;
+            
             updateHUD(); state.turn = 'player'; toggleButtons(true);
-            addLog(`Inimigo detectado: ${state.enemyHp} HP`, "enemy");
-        }
-
-        // --- SKILL LOGIC ---
-        function toggleButtons(enable) {
-            const skills = SKILLS[state.currentClass];
-            for(let i=0; i<3; i++) {
-                const btn = document.getElementById(`btn-s${i+1}`);
-                if(!enable) { btn.disabled = true; continue; }
-                let cost = skills[i].cost;
-                if(state.lastSkill === i) cost = Math.floor(cost * 1.3);
-                btn.disabled = (state.mp < cost);
-            }
-            document.getElementById('btn-rest').disabled = !enable;
+            addLog("Batalha iniciada.", "system");
         }
 
         function performSkill(skillIdx) {
@@ -297,39 +300,45 @@
 
             const skill = SKILLS[state.currentClass][skillIdx-1];
             let cost = skill.cost;
-            let effectiveness = 1.0;
-            if(state.lastSkill === skillIdx) { cost = Math.floor(cost * 1.3); effectiveness = 0.8; addLog("Fadiga! Eficácia reduzida.", "system"); }
+            if(state.lastSkill === skillIdx) cost = Math.floor(cost * 1.3);
             state.lastSkill = skillIdx; state.mp -= cost;
 
+            // Damage logic
             const cls = CLASS_STATS[state.currentClass];
-            let baseDmg = (15 + (saveData.skills.atk * 5));
+            let baseDmg = (15 + (saveData.skills.atk * 5)) + cls.atkBonus;
+            let multiplier = skill.cost > 0 ? (skill.cost/10 + 1) : 1;
+            let dmg = Math.floor(baseDmg * multiplier);
+            
+            // Crit
+            let critChance = 0.05 + (saveData.skills.crit * 0.02);
+            if(Math.random() < critChance) { dmg *= 2; showToast("CRITICAL!", "#ff0000"); screenShake(15); }
 
-            // GENERIC LOGIC FOR DEMO (You can expand per class as in V27)
-            if(skill.name === "POSTURA" || skill.name === "ESCUDO" || skill.name === "FORTIFICAR") {
-                state.activeBuffs.def = 1; addLog(`${skill.name} ativado!`, "player");
-            } else {
-                let multiplier = skill.cost > 0 ? (skill.cost/10 + 1) : 1;
-                let dmg = Math.floor(baseDmg * multiplier * effectiveness);
-                spawnParticles(width*0.75, height*0.45, '#ffaa00', 30); screenShake(10);
-                state.enemyHp -= dmg;
-                addLog(`Usou ${skill.name}: ${dmg} dano.`, "player");
-            }
+            // Vampire Effect Check
+            if(state.relics && state.relics.includes('vamp')) { state.hp = Math.min(state.maxHp, state.hp + Math.ceil(dmg*0.1)); }
+
+            spawnParticles(width*0.75, height*0.45, '#ffaa00', 30);
+            state.enemyHp -= dmg;
+            addLog(`Usou ${skill.name}: ${dmg} dano.`, "player");
             
             updateHUD();
-            if(state.enemyHp <= 0) { state.enemyHp = 0; handleVictory(); } else setTimeout(enemyTurn, 1000);
+            if(state.enemyHp <= 0) { state.enemyHp = 0; setTimeout(handleVictory, 500); } else setTimeout(enemyTurn, 800);
         }
 
         function enemyTurn() {
             if(state.enemyHp <= 0) return;
-            let baseDmg = 10 + (state.sector * 5); if(state.isBoss) baseDmg *= 1.5;
-            
+            let baseDmg = 8 + (state.sector * 4); if(state.isBoss) baseDmg *= 1.5;
+            let dmg = baseDmg + Math.floor(Math.random() * 5);
             let def = saveData.skills.def;
-            if(state.activeBuffs.def) { def += 15; state.activeBuffs.def = 0; }
-            let finalDmg = Math.max(1, baseDmg - def);
+            let finalDmg = Math.max(1, dmg - def);
             
-            state.hp -= finalDmg;
-            spawnParticles(width*0.25, height*0.75, '#ff0000', 20); screenShake(15);
-            addLog(`Inimigo atacou: -${finalDmg} HP`, "enemy");
+            // Dodge?
+            if(Math.random() < (saveData.skills.spd * 0.02)) {
+                showToast("DODGE!", "#ffff00"); addLog("Desviou do ataque!", "player");
+            } else {
+                state.hp -= finalDmg;
+                spawnParticles(width*0.25, height*0.75, '#ff0000', 20); screenShake(10);
+                addLog(`Inimigo atacou: -${finalDmg} HP`, "enemy");
+            }
             
             updateHUD();
             if(state.hp <= 0) { state.hp = state.maxHp; addLog("FALHA CRÍTICA.", "system"); setTimeout(exitBattle, 2000); }
@@ -345,8 +354,8 @@
             else if(!state.isBoss && state.sector === saveData.progress.sector && state.node === saveData.progress.node) { saveData.progress.node++; saveGame(); }
 
             if(state.waveCurrent < state.wavesTotal && !state.isBoss) {
-                state.waveCurrent++; setTimeout(() => { addLog(`ONDA ${state.waveCurrent} INICIADA`, "system"); startBattle(); }, 1500);
-            } else setTimeout(exitBattle, 1500);
+                state.waveCurrent++; setTimeout(() => { addLog(`ONDA ${state.waveCurrent}`, "system"); startBattle(); }, 1000);
+            } else setTimeout(exitBattle, 1000);
         }
 
         // --- SHOP ---
@@ -355,66 +364,77 @@
         function updateShopUI() { document.getElementById('shop-essence-val').innerText = saveData.essence; ['atk','hp','mp','crit','def','spd'].forEach(s => { document.getElementById(`lvl-${s}`).innerText = saveData.skills[s]; }); }
         function buyUpgrade(type) { let cost = 10 * (saveData.skills[type]+1); if(saveData.essence >= cost) { saveData.essence-=cost; saveData.skills[type]++; saveGame(); updateShopUI(); } }
 
-        // --- DIALOGUE ---
-        function startDialogue(speaker, text, onFinish) { document.getElementById('dialogue-overlay').style.display='flex'; document.getElementById('controls-area').style.opacity='0'; state.turn='dialogue'; document.getElementById('char-name-disp').innerText = speaker; dialogueState.text = text; dialogueState.index = 0; dialogueState.isTyping = true; dialogueState.nextAction = onFinish; document.getElementById('story-text').innerText = ''; document.getElementById('dialogue-btn').style.opacity = '0.5'; if(dialogueState.timer) clearTimeout(dialogueState.timer); typeWriter(); }
-        let dialogueState = { text: '', index: 0, isTyping: false, timer: null }; function typeWriter() { if(dialogueState.index < dialogueState.text.length) { document.getElementById('story-text').innerText += dialogueState.text.charAt(dialogueState.index); dialogueState.index++; dialogueState.timer = setTimeout(typeWriter, 30); } else finishTyping(); } function finishTyping() { if(dialogueState.timer) clearTimeout(dialogueState.timer); document.getElementById('story-text').innerText = dialogueState.text; dialogueState.isTyping = false; document.getElementById('dialogue-btn').style.opacity = '1'; } function handleDialogueClick() { if(dialogueState.isTyping) finishTyping(); else { document.getElementById('dialogue-overlay').style.display='none'; document.getElementById('controls-area').style.opacity='1'; if(dialogueState.nextAction) dialogueState.nextAction(); } }
-
-        // --- RENDER & FX ---
-        function updateHUD() { document.getElementById('hp-bar').style.width = (state.hp/state.maxHp*100)+'%'; document.getElementById('mp-bar').style.width = (state.mp/state.maxMp*100)+'%'; document.getElementById('sector-display').innerText = `${state.sector}-${state.node}`; document.getElementById('wave-display').innerText = `ONDA ${state.waveCurrent}/${state.wavesTotal}`; document.getElementById('essence-val').innerText = saveData.essence; }
-        function addLog(msg, type) { const c = document.getElementById('battle-log'); const d = document.createElement('div'); d.className = `log-entry log-${type}`; d.innerText = `> ${msg}`; c.prepend(d); if(c.children.length>6)c.lastChild.remove(); }
+        // --- UI & FX ---
+        function toggleButtons(enable) {
+            const skills = SKILLS[state.currentClass];
+            for(let i=0; i<3; i++) {
+                const btn = document.getElementById(`btn-s${i+1}`);
+                if(!enable) { btn.disabled = true; continue; }
+                let cost = skills[i].cost; if(state.lastSkill === i) cost = Math.floor(cost * 1.3);
+                btn.disabled = (state.mp < cost);
+            }
+            document.getElementById('btn-rest').disabled = !enable;
+        }
+        function updateHUD() { document.getElementById('hp-bar').style.width = (state.hp/state.maxHp*100)+'%'; document.getElementById('mp-bar').style.width = (state.mp/state.maxMp*100)+'%'; document.getElementById('sector-display').innerText = `${state.sector}-${state.node}`; document.getElementById('wave-display').innerText = `ONDA ${state.waveCurrent}`; document.getElementById('essence-val').innerText = saveData.essence; }
+        function addLog(msg, type) { const c = document.getElementById('battle-log'); const d = document.createElement('div'); d.className = `log-entry log-${type}`; d.innerText = `> ${msg}`; c.prepend(d); if(c.children.length>5)c.lastChild.remove(); }
         function showToast(msg, color='#fff') { const el = document.getElementById('toast-msg'); el.innerText = msg; el.style.color = color; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 1000); }
         function screenShake(amount) { state.shake = amount; }
         class Particle { constructor(x, y, color, speed, size) { this.x = x; this.y = y; this.color = color; this.size = size; this.vx = (Math.random()-0.5)*speed; this.vy = (Math.random()-0.5)*speed; this.life = 1.0; } update() { this.x+=this.vx; this.y+=this.vy; this.life-=0.03; } draw(ctx) { ctx.globalAlpha = Math.max(0,this.life); ctx.fillStyle=this.color; ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1.0; } }
         function spawnParticles(x, y, color, count) { for(let i=0; i<count; i++) state.particles.push(new Particle(x, y, color, 15, Math.random()*4+1)); }
 
         function drawGame(time) {
-            // SAFE DRAW LOOP (Anti-Crash)
-            try {
-                ctx.fillStyle = '#050505'; ctx.fillRect(0,0,width,height);
-                let horizon = height * 0.4; let gridColor = state.sector === 1 ? '#00ff00' : (state.sector === 2 ? '#ff4400' : '#aa00ff');
-                ctx.fillStyle = '#000'; ctx.fillRect(0,0,width,horizon);
-                ctx.save(); ctx.beginPath(); ctx.rect(0, horizon, width, height-horizon); ctx.clip();
-                ctx.strokeStyle = gridColor; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
-                for(let i=-20; i<=20; i++) { let x1 = width/2 + i * 40; let x2 = width/2 + i * 200; ctx.beginPath(); ctx.moveTo(x1, horizon); ctx.lineTo(x2, height); ctx.stroke(); }
-                let offset = (Date.now() / 5) % 50; for(let i=0; i<20; i++) { let y = horizon + (i * 30 + offset); if(y < height) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); } }
-                ctx.restore(); ctx.globalAlpha = 1.0;
-                ctx.save(); if(state.shake>0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake*=0.9; if(state.shake<0.5)state.shake=0; }
-                
-                // DRAW PLAYER (FALLBACK IF NOT LOADED)
-                const cls = CLASS_STATS[state.currentClass]; const px = width*0.25; const py = height*0.75;
-                ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(px, py+35, 40, 10, 0, 0, Math.PI*2); ctx.fill();
-                if(assets.player.loaded) {
-                    ctx.shadowBlur=20; ctx.shadowColor=cls.color; ctx.drawImage(assets.player, px - 50, py - 50, 100, 100); ctx.shadowBlur=0;
-                } else {
-                    // Placeholder Player
-                    ctx.shadowBlur=20; ctx.shadowColor=cls.color; ctx.strokeStyle=cls.color; ctx.lineWidth=3;
-                    ctx.beginPath(); ctx.arc(px, py, 30, 0, Math.PI*2); ctx.stroke();
-                    ctx.font="20px Arial"; ctx.fillStyle=cls.color; ctx.fillText("P", px-6, py+6);
-                }
+            ctx.fillStyle = '#050505'; ctx.fillRect(0,0,width,height);
+            
+            // GRID BACKGROUND
+            let horizon = height * 0.4;
+            let gridColor = state.sector === 1 ? '#00ff00' : (state.sector === 2 ? '#ff4400' : '#aa00ff');
+            ctx.strokeStyle = gridColor; ctx.globalAlpha = 0.2; ctx.lineWidth = 1;
+            ctx.beginPath();
+            for(let i=-10; i<=10; i++) { ctx.moveTo(width/2 + i*50, horizon); ctx.lineTo(width/2 + i*300, height); } // Verticais
+            let offset = (Date.now() / 10) % 40;
+            for(let y=horizon; y<height; y+=40) { let dy = y + offset; if(dy<height) { ctx.moveTo(0, dy); ctx.lineTo(width, dy); } } // Horizontais
+            ctx.stroke(); ctx.globalAlpha = 1.0;
 
-                // DRAW ENEMY (FALLBACK IF NOT LOADED)
-                if(state.enemyHp > 0 && document.getElementById('dialogue-overlay').style.display === 'none' && document.getElementById('map-overlay').style.display === 'none') {
-                    const ex = width*0.75; const ey = height*0.45; const hpPct = state.enemyHp/state.enemyMaxHp; const bossColor = state.isBoss ? '#b026ff' : '#ff4444';
-                    ctx.shadowBlur=0; ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.ellipse(ex, ey + (state.isBoss?100:60), (state.isBoss?80:50), 10, 0, 0, Math.PI*2); ctx.fill();
-                    const scaleFactor = 0.7; ctx.save(); ctx.translate(ex,ey); ctx.scale(scaleFactor, scaleFactor);
-                    
-                    if(assets.enemy.loaded) {
-                        let spriteSize = state.isBoss ? 250 : 180; ctx.shadowBlur=30; ctx.shadowColor=bossColor; 
-                        ctx.drawImage(assets.enemy, -spriteSize/2, -spriteSize/2, spriteSize, spriteSize);
-                    } else {
-                        // Placeholder Enemy
-                        ctx.shadowBlur=30; ctx.shadowColor=bossColor; ctx.fillStyle=bossColor;
-                        ctx.fillRect(-40, -40, 80, 80);
-                    }
-                    ctx.restore();
-                    // Enemy HP Bar
-                    ctx.shadowBlur=0; ctx.fillStyle='#333'; ctx.fillRect(ex-40,ey-20,80,6); ctx.fillStyle=bossColor; ctx.fillRect(ex-40,ey-20,80*hpPct,6);
+            ctx.save();
+            if(state.shake>0) { ctx.translate((Math.random()-0.5)*state.shake, (Math.random()-0.5)*state.shake); state.shake*=0.9; if(state.shake<0.5)state.shake=0; }
+
+            const cls = CLASS_STATS[state.currentClass];
+            const px = width*0.2; const py = height*0.7;
+            
+            // DRAW PLAYER (GEOMETRIC FALLBACK IF NO IMAGE)
+            if(assets.player.complete && assets.player.naturalWidth > 0) {
+                ctx.shadowBlur=20; ctx.shadowColor=cls.color; ctx.drawImage(assets.player, px - 60, py - 60, 120, 120); ctx.shadowBlur=0;
+            } else {
+                // Hologram Player
+                ctx.shadowBlur=30; ctx.shadowColor=cls.color; ctx.strokeStyle=cls.color; ctx.lineWidth=4;
+                ctx.beginPath(); ctx.arc(px, py, 40, 0, Math.PI*2); ctx.stroke();
+                ctx.font="20px Arial"; ctx.fillStyle=cls.color; ctx.fillText("P", px-6, py+6);
+            }
+
+            // DRAW ENEMY
+            if(state.enemyHp > 0 && document.getElementById('map-overlay').style.display === 'none') {
+                const ex = width*0.8; const ey = height*0.4;
+                const hpPct = state.enemyHp/state.enemyMaxHp;
+                const bossColor = state.isBoss ? '#b026ff' : '#ff4444';
+                
+                if(assets.enemy.complete && assets.enemy.naturalWidth > 0) {
+                    ctx.shadowBlur=30; ctx.shadowColor=bossColor; 
+                    let size = state.isBoss ? 180 : 120;
+                    ctx.drawImage(assets.enemy, ex - size/2, ey - size/2, size, size);
+                } else {
+                    // Hologram Enemy
+                    ctx.shadowBlur=30; ctx.shadowColor=bossColor; ctx.fillStyle=bossColor;
+                    ctx.fillRect(ex-40, ey-40, 80, 80);
                 }
                 
-                state.particles.forEach((p,i)=>{ p.update(); p.draw(ctx); if(p.life<=0)state.particles.splice(i,1); }); ctx.restore();
-            } catch(e) {
-                console.error("Render error:", e);
+                // HP BAR ENEMY
+                ctx.shadowBlur=0; ctx.fillStyle='#333'; ctx.fillRect(ex-40, ey-70, 80, 6);
+                ctx.fillStyle=bossColor; ctx.fillRect(ex-40, ey-70, 80*hpPct, 6);
             }
+
+            state.particles.forEach((p,i)=>{ p.update(); p.draw(ctx); if(p.life<=0)state.particles.splice(i,1); });
+            ctx.restore();
+            
             gameLoopId = requestAnimationFrame(() => drawGame(Date.now()));
         }
     </script>
